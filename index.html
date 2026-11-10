@@ -170,7 +170,8 @@ button { font-family: inherit; }
          -webkit-backdrop-filter: var(--desenfoque); backdrop-filter: var(--desenfoque); }
 .panel { margin-top: 40px; }
 .datos { display: grid; grid-template-columns: repeat(3, 1fr); }
-.dato { display: flex; flex-direction: column; justify-content: flex-start; padding: 18px 8px; text-align: center; }
+.dato { display: flex; flex-direction: column; padding: 18px 8px; text-align: center; }
+.dato .v { flex: 1; display: flex; align-items: center; justify-content: center; }   /* el valor queda centrado aunque tenga una o dos líneas */
 .dato + .dato { border-left: 1px solid var(--linea-fina); }
 .dato .k { font-size: 9.5px; font-weight: 500; letter-spacing: .26em; color: var(--oro-3); text-indent: .26em; }
 .dato .v { margin-top: 6px; font-size: 15px; font-weight: 400; line-height: 1.25; color: var(--marfil); }
@@ -306,7 +307,9 @@ a.boton { text-decoration: none; }
 .p-toque { margin-top: 10px; font-size: 12px; color: var(--texto-suave); }
 .p-corte { position: relative; height: 34px; margin-top: 12px; }
 .p-corte::before { content: ""; position: absolute; left: 22px; right: 22px; top: 50%; border-top: 1px dashed rgba(255,255,255,.18); }
-.p-talon { position: relative; display: grid; grid-template-columns: 1.1fr 1.3fr .8fr; gap: 6px; padding: 2px 18px 8px; text-align: center; }
+.p-talon { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 2px 18px 8px; text-align: center; }
+.p-talon > div { display: flex; flex-direction: column; }
+.p-talon .v { flex: 1; display: flex; align-items: center; justify-content: center; }
 .p-talon .k { font-size: 8.5px; font-weight: 500; letter-spacing: .3em; color: var(--oro-3); }
 .p-talon .v { margin-top: 3px; font-size: 13px; font-weight: 500; line-height: 1.2; }
 .p-codigo { position: relative; padding: 6px 18px 18px; text-align: center; font-size: 12.5px; font-weight: 500; letter-spacing: .24em; color: var(--oro-2); font-variant-numeric: tabular-nums; }

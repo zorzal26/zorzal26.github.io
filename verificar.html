@@ -69,6 +69,7 @@ select { margin-top: 8px; appearance: none; -webkit-appearance: none; }
 select option { color: #111; }
 label { display: block; font-size: 11px; letter-spacing: .3em; font-weight: 500; color: var(--oro-3); margin-bottom: 10px; }
 .filtros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0; }
+.filtros button { font-size: 13px !important; padding: 11px 4px !important; }
 .filtros button { margin: 0; padding: 9px 4px; font-size: 12px; letter-spacing: .06em; color: var(--oro-2); background: transparent; border: 1px solid rgba(241,213,138,.25); }
 .filtros button.si { color: #2b1c05; background: var(--oro-2); }
 ul.lista { list-style: none; }
@@ -109,6 +110,10 @@ ul.lista li { padding: 11px 2px; border-bottom: 1px solid var(--linea); }
 button:disabled { opacity: .4; }
 .fila .car .ex { color: #ffd27a; }
 .sinpase { margin-top: 10px; }
+.total-lista { margin: -2px 0 12px; font-size: 15px; color: var(--suave); }
+.total-lista b { color: var(--oro-1); font-weight: 600; font-size: 20px; }
+.fila .acomp { margin-top: 3px; font-size: 14px; color: var(--oro-2); line-height: 1.35; }
+.fila .acomp b { font-weight: 600; }
 /* recepción: pases generados antes del evento */
 .recepcion { margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: rgba(0,0,0,.2); border: 1px solid rgba(255,255,255,.1); }
 .recepcion .k { font-size: 10px; letter-spacing: .26em; font-weight: 600; color: var(--oro-3); }
@@ -172,15 +177,12 @@ button:disabled { opacity: .4; }
 
   <section class="tarjeta">
     <label>LISTADO DE INVITADOS</label>
-    <input id="buscar" class="texto" placeholder="Buscar nombre, acompañante o extra" autocomplete="off">
-    <select id="grupo"><option value="">Todos los anfitriones</option></select>
+    <div class="total-lista" id="total-lista"></div>
+    <input id="buscar" class="texto" placeholder="Buscar por nombre" autocomplete="off">
     <div class="filtros">
       <button type="button" data-f="todos" class="si">Todos</button>
       <button type="button" data-f="faltan">Faltan</button>
       <button type="button" data-f="in">Ingresaron</button>
-      <button type="button" data-f="pase">Generaron pase</button>
-      <button type="button" data-f="nopase">Sin generar</button>
-      <button type="button" data-f="ex">Con extras</button>
     </div>
     <ul id="lista" class="lista"></ul>
     <button id="excel" type="button">Descargar Excel</button>
@@ -411,20 +413,21 @@ function pintar() {
   $("rec-barra").style.transform = `scaleX(${conPase.length / lista.length})`;
   const ultimos = conPase.filter((p) => !ing[p.r]).sort((a, b) => pase[b.r] - pase[a.r]).slice(0, 3);
   $("rec-ult").textContent = ultimos.length ? "Últimos: " + ultimos.map((p) => `${p.n} (${hora(pase[p.r])})`).join(" · ") : "";
-  const q = sinTilde($("buscar").value.trim()), g = $("grupo").value;
+  const conAcomp = lista.filter((p) => p.p > 1).length;
+  $("total-lista").innerHTML = `<b>${ZD.personas}</b> invitados en total · ${lista.length} pases · ${conAcomp} vienen con acompañantes`;
+  const q = sinTilde($("buscar").value.trim());
   const filas = lista.filter((p) => {
-    if (g && p.g !== g) return false;
     if (filtro === "in" && !ing[p.r]) return false;
     if (filtro === "faltan" && ing[p.r]) return false;
     if (filtro === "ex" && !ex[p.r]) return false;
     if (filtro === "pase" && !pase[p.r]) return false;
     if (filtro === "nopase" && pase[p.r]) return false;
     const exNombres = (ex[p.r] || []).map((e) => e.nombres || "").join(" ");
-    return !q || sinTilde([p.n, ...(p.a || []), p.c, p.d, exNombres].join(" ")).includes(q);
-  });
-  const items = []; let grupoAnt = null;
+    return !q || sinTilde([p.n, ...(p.a || []), exNombres].join(" ")).includes(q);
+  }).sort((a, b) => sinTilde(a.n.replace(/^Lic\.\s*/, "")).localeCompare(sinTilde(b.n.replace(/^Lic\.\s*/, ""))));
+  const items = [];
   const sinPase = ex[SIN] || [];
-  if (sinPase.length && !g && (filtro === "todos" || filtro === "ex" || filtro === "in")) {
+  if (sinPase.length && (filtro === "todos" || filtro === "ex" || filtro === "in")) {
     const t = document.createElement("li"); t.className = "grupo-tit"; t.textContent = "Ingresos sin pase (autorizados)"; items.push(t);
     for (const e of sinPase) {
       if (q && !sinTilde(e.nombres).includes(q)) continue;
@@ -435,29 +438,33 @@ function pintar() {
     }
   }
   for (const p of filas) {
-    if (p.g !== grupoAnt) {
-      grupoAnt = p.g; const t = document.createElement("li"); t.className = "grupo-tit"; t.textContent = p.g;
-      const del = lista.filter((x) => x.g === p.g), n = del.filter((x) => pase[x.r]).length;
-      const s = document.createElement("span"); s.textContent = `${n}/${del.length} con pase`; t.append(s); items.push(t);
-    }
     const li = document.createElement("li");
     const fila = document.createElement("div"); fila.className = "fila";
     const txt = document.createElement("div");
     const nom = document.createElement("div"); nom.className = "nom"; nom.textContent = p.n;
-    if (p.p > 1) { const s = document.createElement("small"); s.textContent = "× " + p.p; nom.append(s); }
+    txt.append(nom);
+    if (p.p > 1) {   // cuántos acompañantes trae, en una línea que se lee de un vistazo
+      const n = p.p - 1, ac = document.createElement("div"); ac.className = "acomp";
+      ac.innerHTML = `<b>+${n} acompañante${n > 1 ? "s" : ""}</b>`;
+      // «Kenny y Jenny Yuja» + 4 hijos: la segunda persona del nombre también cuenta como acompañante
+      const nombres = [...(p.a || [])];
+      if (nombres.length === n - 1 && p.n.includes(" y ")) nombres.unshift(p.n.split(" y ").pop());
+      if (nombres.length) ac.append(": " + nombres.join(", "));
+      txt.append(ac);
+    }
     const car = document.createElement("div"); car.className = "car";
-    car.textContent = [p.c, p.d, p.a && p.a.length ? "Con: " + p.a.join(", ") : ""].filter(Boolean).join(" · ");
+    car.textContent = p.c || (p.p > 1 ? "" : p.d) || "";
     const nex = st.extrasDe(p.r);
     if (nex) {
       const s = document.createElement("span"); s.className = "ex";
       const nombres = ex[p.r].map((e) => e.nombres).filter(Boolean).join(", ");
       s.textContent = `${car.textContent ? " · " : ""}+${nex} extra${nex > 1 ? "s" : ""}${nombres ? ": " + nombres : ""}`; car.append(s);
     }
-    txt.append(nom, car);
+    if (car.textContent) txt.append(car);
     const chip = document.createElement("span");
     if (ing[p.r]) { chip.className = "chip in"; chip.textContent = "Ingresó " + hora(ing[p.r].h); }
-    else if (pase[p.r]) { chip.className = "chip pase"; chip.textContent = "Pase " + hora(pase[p.r]); }
-    else { chip.className = "chip no"; chip.textContent = "Sin abrir"; }
+    else if (pase[p.r]) { chip.className = "chip pase"; chip.textContent = "Tiene pase"; }
+    else { chip.className = "chip no"; chip.textContent = "Pendiente"; }
     fila.append(txt, chip); li.append(fila);
     if (abierto === p.r) {
       const acc = document.createElement("div"); acc.className = "acciones";
@@ -560,7 +567,6 @@ $("camara").addEventListener("click", async () => {
 $("validar").addEventListener("click", () => { ultimo = ""; validar($("manual").value); $("manual").value = ""; });
 $("manual").addEventListener("keydown", (e) => { if (e.key === "Enter") $("validar").click(); });
 $("buscar").addEventListener("input", pintar);
-$("grupo").addEventListener("change", pintar);
 document.querySelectorAll(".filtros button").forEach((b) => b.addEventListener("click", () => {
   filtro = b.dataset.f; document.querySelectorAll(".filtros button").forEach((x) => x.classList.toggle("si", x === b)); pintar();
 }));
@@ -608,7 +614,6 @@ $("excel").addEventListener("click", async () => {
     firma = await crypto.subtle.importKey("raw", bytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   } catch { $("sin-clave").classList.remove("oculto"); return; }
   for (const p of lista) porRef[p.r] = p;
-  for (const g of [...new Set(lista.map((p) => p.g))]) { const o = document.createElement("option"); o.value = o.textContent = g; $("grupo").append(o); }
   $("app").classList.remove("oculto");
   await comprobar(); pintar();
   await sincronizar(); cargado = true; escuchar();
