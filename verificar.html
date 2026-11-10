@@ -68,7 +68,8 @@ input.texto::placeholder { color: rgba(251,246,232,.4); }
 select { margin-top: 8px; appearance: none; -webkit-appearance: none; }
 select option { color: #111; }
 label { display: block; font-size: 11px; letter-spacing: .3em; font-weight: 500; color: var(--oro-3); margin-bottom: 10px; }
-.filtros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0; }
+.filtros { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin: 10px 0; }
+.filtros button:nth-child(-n+3) { grid-column: span 2; } .filtros button:nth-child(n+4) { grid-column: span 3; }
 .filtros button { font-size: 13px !important; padding: 11px 4px !important; }
 .filtros button { margin: 0; padding: 9px 4px; font-size: 12px; letter-spacing: .06em; color: var(--oro-2); background: transparent; border: 1px solid rgba(241,213,138,.25); }
 .filtros button.si { color: #2b1c05; background: var(--oro-2); }
@@ -152,7 +153,7 @@ button:disabled { opacity: .4; }
     </div>
     <div class="barra"><i id="barra"></i><i id="barra-ex" class="ex"></i></div>
     <div class="libres" id="libres"></div>
-    <div class="recepcion">
+    <div class="recepcion" id="recepcion" style="cursor:pointer">
       <div class="k">RECEPCIÓN ESPERADA</div>
       <div class="v" id="rec-v"></div>
       <div class="barra2"><i id="rec-barra"></i></div>
@@ -180,6 +181,8 @@ button:disabled { opacity: .4; }
     <input id="buscar" class="texto" placeholder="Buscar por nombre" autocomplete="off">
     <div class="filtros">
       <button type="button" data-f="todos" class="si">Todos</button>
+      <button type="button" data-f="pase">Con QR</button>
+      <button type="button" data-f="nopase">Sin QR</button>
       <button type="button" data-f="faltan">Faltan</button>
       <button type="button" data-f="in">Ingresaron</button>
     </div>
@@ -407,7 +410,7 @@ function pintar() {
     : `Sin conexión${pendientes.length ? " · " + pendientes.length + " por enviar" : ""} · se guarda en este teléfono`;
   const conPase = lista.filter((p) => pase[p.r]);
   const persConPase = conPase.reduce((s, p) => s + p.p, 0);
-  $("rec-v").innerHTML = `<b>${persConPase}</b> de ${ZD.personas} invitados ya tienen su pase`;
+  $("rec-v").innerHTML = `<b>${persConPase}</b> de ${ZD.personas} invitados ya generaron su QR · <u>ver quiénes</u>`;
   $("rec-barra").style.transform = `scaleX(${persConPase / ZD.personas})`;
   const ultimos = conPase.filter((p) => !ing[p.r]).sort((a, b) => pase[b.r] - pase[a.r]).slice(0, 3);
   $("rec-ult").textContent = ultimos.length ? "Últimos: " + ultimos.map((p) => `${p.n} (${hora(pase[p.r])})`).join(" · ") : "";
@@ -459,7 +462,7 @@ function pintar() {
     if (car.textContent) txt.append(car);
     const chip = document.createElement("span");
     if (ing[p.r]) { chip.className = "chip in"; chip.textContent = "Ingresó " + hora(ing[p.r].h); }
-    else if (pase[p.r]) { chip.className = "chip pase"; chip.textContent = "Tiene pase"; }
+    else if (pase[p.r]) { chip.className = "chip pase"; chip.textContent = "QR " + hora(pase[p.r]); }
     else { chip.className = "chip no"; chip.textContent = "Pendiente"; }
     fila.append(txt, chip); li.append(fila);
     if (abierto === p.r) {
@@ -564,6 +567,11 @@ $("camara").addEventListener("click", async () => {
 $("validar").addEventListener("click", () => { ultimo = ""; validar($("manual").value); $("manual").value = ""; });
 $("manual").addEventListener("keydown", (e) => { if (e.key === "Enter") $("validar").click(); });
 $("buscar").addEventListener("input", pintar);
+// tocar el resumen de recepción muestra la lista de quienes ya generaron su QR
+$("recepcion").addEventListener("click", () => {
+  filtro = "pase"; document.querySelectorAll(".filtros button").forEach((x) => x.classList.toggle("si", x.dataset.f === "pase"));
+  pintar(); $("total-lista").scrollIntoView({ behavior: "smooth", block: "start" });
+});
 document.querySelectorAll(".filtros button").forEach((b) => b.addEventListener("click", () => {
   filtro = b.dataset.f; document.querySelectorAll(".filtros button").forEach((x) => x.classList.toggle("si", x === b)); pintar();
 }));
