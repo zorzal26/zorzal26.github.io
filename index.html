@@ -389,7 +389,7 @@ a.boton { text-decoration: none; }
   <section id="v-pin">
     <header class="cabeza">
       <img class="escudo aparece" style="--i:0" src="img/escudo.webp" alt="Escudo de San Pedro Sula">
-      <p class="presenta aparece" style="--i:1">La Municipalidad de San Pedro Sula, que dirige el alcalde <b>Roberto Contreras</b>, tiene el grato honor de invitarle a</p>
+      <p class="presenta aparece" style="--i:1">La Municipalidad de San Pedro Sula, que dirige el alcalde <b>Roberto Contreras</b>, tiene el grato honor de invitar a la</p>
     </header>
 
     <div class="escena" id="escena" aria-hidden="true">
@@ -448,7 +448,7 @@ a.boton { text-decoration: none; }
       </div>
       <div id="msg" class="msg" role="alert"></div>
       <button id="btn" class="boton" type="submit" disabled>VER MI PASE</button>
-      <p class="ayuda" style="margin-top:12px">Escriba los 4 dígitos que recibió con su invitación.</p>
+      <p class="ayuda" style="margin-top:12px">El PIN de 4 dígitos llega junto con la invitación.</p>
     </form>
   </section>
 
@@ -459,7 +459,7 @@ a.boton { text-decoration: none; }
         <circle cx="12" cy="12" r="10" transform="rotate(-90 12 12)"/><path d="M7.5 12.4l3 3 6-6.4"/></svg>
       PASE CONFIRMADO
     </div>
-    <p class="bienvenida escalon" style="--i:0">Le esperamos, <b id="saludo"></b></p>
+    <p class="bienvenida escalon" style="--i:0">Pase de <b id="saludo"></b></p>
 
     <div class="escenario-pase">
       <div class="pase" id="pase">
@@ -479,7 +479,7 @@ a.boton { text-decoration: none; }
             <div class="qr-marco" id="qr-marco" role="button" aria-label="Ampliar código">
               <div class="qr" id="qr"><div class="linea"></div></div>
             </div>
-            <div class="p-toque">Toque el código para ampliarlo</div>
+            <div class="p-toque">Al tocar el código, se amplía</div>
           </div>
           <div class="p-corte"></div>
           <div class="p-talon">
@@ -488,7 +488,7 @@ a.boton { text-decoration: none; }
             <div><div class="k">HORA</div><div class="v" style="white-space:nowrap">7:00 p.m.</div></div>
           </div>
           <div class="p-codigo" id="p-codigo"></div>
-          <div class="p-pie">Presente este código al ingresar · Una sola entrada</div>
+          <div class="p-pie">El código se presenta en la entrada · Válido una sola vez</div>
         </div></div>
       </div>
     </div>
@@ -500,7 +500,7 @@ a.boton { text-decoration: none; }
       <button id="agenda" class="boton sec" type="button"><svg><use href="#i-cal"/></svg>AGENDAR</button>
       <a id="mapa" class="boton sec" href="https://www.google.com/maps/search/?api=1&query=Plaza+de+las+Banderas+San+Pedro+Sula" target="_blank" rel="noopener"><svg><use href="#i-lugar"/></svg>CÓMO LLEGAR</a>
     </div>
-    <button id="otro" class="enlace escalon" style="--i:5" type="button">Usar otro PIN</button>
+    <button id="otro" class="enlace escalon" style="--i:5" type="button">Ingresar otro PIN</button>
   </section>
 
   <footer class="firma">
@@ -516,7 +516,7 @@ a.boton { text-decoration: none; }
   <div id="grande-n" class="n"></div>
   <div id="grande-p" class="p"></div>
   <div id="grande-c" class="c"></div>
-  <div class="cerrar">Toque para cerrar</div>
+  <div class="cerrar">Al tocar la pantalla, se cierra</div>
 </div>
 
 <script src="lib/qrcode.js"></script>
@@ -612,14 +612,14 @@ function tic() {
   const ms = EVENTO - Date.now();
   if (ms <= 0) {
     const fin = Date.now() - EVENTO > 6 * 3600e3;
-    $("cuenta").innerHTML = `<div class="k">${fin ? "GRACIAS POR ACOMPAÑARNOS" : "ES HOY"}</div><div class="hoy">${fin ? "Zorzal Dorado 2026" : "La gala está en curso"}</div>`;
+    $("cuenta").innerHTML = `<div class="k">${fin ? "GRACIAS POR LA ASISTENCIA" : "ES HOY"}</div><div class="hoy">${fin ? "Zorzal Dorado 2026" : "La gala está en curso"}</div>`;
     $("mini-cuenta").innerHTML = fin ? "" : "La gala está en curso · <b>Plaza de las Banderas</b>";
     return false;
   }
   const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s / 3600) % 24, m = Math.floor(s / 60) % 60;
   const u = { d: dosDig(d), h: dosDig(h), m: dosDig(m), s: dosDig(s % 60) };
   document.querySelectorAll("#reloj .num").forEach((el) => cifra(el, u[el.dataset.u]));
-  $("mini-cuenta").innerHTML = d > 0 ? `Faltan <b>${d} ${d === 1 ? "día" : "días"}, ${h} h ${dosDig(m)} min</b> para la gala` : `Faltan <b>${h} h ${dosDig(m)} min</b> · Le esperamos a las 7:00 p.m.`;
+  $("mini-cuenta").innerHTML = d > 0 ? `Faltan <b>${d} ${d === 1 ? "día" : "días"}, ${h} h ${dosDig(m)} min</b> para la gala` : `Faltan <b>${h} h ${dosDig(m)} min</b> · La gala inicia a las 7:00 p.m.`;
   return true;
 }
 if (tic()) { const t = setInterval(() => { if (!tic()) clearInterval(t); }, 1000); }
@@ -665,7 +665,7 @@ async function entrar() {
     if (!f) {
       caja.classList.remove("mal"); void caja.offsetWidth; caja.classList.add("mal");
       if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
-      $("msg").textContent = "PIN no válido. Revise los números."; $("msg").classList.add("ver");
+      $("msg").textContent = "PIN no válido: los números no coinciden con ninguna invitación."; $("msg").classList.add("ver");
       await espera(500); campo.value = ""; ocupado = false; pintarPin(); campo.focus();
       return;
     }
@@ -676,7 +676,7 @@ async function entrar() {
     mostrar(f, true);
   } catch {
     caja.classList.remove("pensando");
-    $("msg").textContent = "No se pudo verificar. Intente de nuevo."; $("msg").classList.add("ver");
+    $("msg").textContent = "No se pudo verificar en este momento. Se puede intentar de nuevo."; $("msg").classList.add("ver");
   }
   ocupado = false; pintarPin();
 }
@@ -694,7 +694,7 @@ function mostrar(f, animado) {
   $("p-cargo").textContent = f.c || "";
   $("p-cargo").classList.toggle("oculto", !f.c);
   $("p-chips").innerHTML = esAnfitrion(f.g) ? `Invitación de <b>${escapar(f.g)}</b>` : `<b>${escapar(f.g)}</b>`;
-  $("p-acomp").innerHTML = f.a && f.a.length ? `Ingresa con: <b>${f.a.map(escapar).join(", ")}</b>` : "";
+  $("p-acomp").innerHTML = f.a && f.a.length ? `Ingresa junto con: <b>${f.a.map(escapar).join(", ")}</b>` : "";
   $("p-codigo").textContent = f.q;
   const qr = $("qr"); qr.querySelector("canvas")?.remove(); qr.prepend(qrCanvas(f.q, 640));
   const vp = $("v-pase");
@@ -764,7 +764,7 @@ $("agenda").addEventListener("click", async () => {
   const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Municipalidad de San Pedro Sula//Zorzal Dorado//ES", "BEGIN:VEVENT",
     "UID:zorzal-dorado-2026@sps", "DTSTAMP:20261110T000000Z", "DTSTART:20261114T010000Z", "DTEND:20261114T050000Z",
     "SUMMARY:Zorzal Dorado 2026 · Tercera edición", "LOCATION:Plaza de las Banderas\\, San Pedro Sula",
-    "DESCRIPTION:Presente su pase con código QR al ingresar." + (ficha ? "\\nCódigo: " + ficha.q : ""),
+    "DESCRIPTION:El pase con código QR se presenta en la entrada." + (ficha ? "\\nCódigo: " + ficha.q : ""),
     "BEGIN:VALARM", "TRIGGER:-PT2H", "ACTION:DISPLAY", "DESCRIPTION:Zorzal Dorado 2026", "END:VALARM",
     "END:VEVENT", "END:VCALENDAR"].join("\r\n");
   const blob = new Blob([ics], { type: "text/calendar" });
@@ -822,14 +822,14 @@ $("guardar").addEventListener("click", async () => {
   const sub = [ficha.c, esAnfitrion(ficha.g) ? "Invitación de " + ficha.g : ficha.g].filter(Boolean).join(" · ");
   for (const l of lineas(x, sub, bw - 120)) { x.fillText(l, W / 2, y - 6); y += 42; }
   if (ficha.a && ficha.a.length) { x.fillStyle = "rgba(251,246,232,.72)"; x.font = "400 27px Outfit";
-    for (const l of lineas(x, "Ingresa con: " + ficha.a.join(", "), bw - 120)) { x.fillText(l, W / 2, y); y += 36; } }
+    for (const l of lineas(x, "Ingresa junto con: " + ficha.a.join(", "), bw - 120)) { x.fillText(l, W / 2, y); y += 36; } }
   const lado = Math.min(440, by + bh - 210 - y), top = y + 14;
   x.fillStyle = "#fff"; x.beginPath(); x.roundRect((W - lado) / 2 - 22, top - 22, lado + 44, lado + 44, 28); x.fill();
   x.imageSmoothingEnabled = false; x.drawImage(qrCanvas(ficha.q, 900), (W - lado) / 2, top, lado, lado); x.imageSmoothingEnabled = true;
   const yc = by + bh - 130;
   x.setLineDash([14, 12]); x.strokeStyle = "rgba(241,213,138,.35)"; x.lineWidth = 2; x.beginPath(); x.moveTo(bx + 50, yc); x.lineTo(bx + bw - 50, yc); x.stroke(); x.setLineDash([]);
   x.fillStyle = "#f1d58a"; x.font = "500 32px Outfit"; espaciado(x, ficha.q, W / 2, yc + 60, 5);
-  x.fillStyle = "rgba(251,246,232,.65)"; x.font = "300 25px Outfit"; x.fillText("Presente este código al ingresar · Una sola entrada", W / 2, yc + 102);
+  x.fillStyle = "rgba(251,246,232,.65)"; x.font = "300 25px Outfit"; x.fillText("El código se presenta en la entrada · Válido una sola vez", W / 2, yc + 102);
   x.fillStyle = "#d4a94e"; x.font = "500 22px Outfit"; espaciado(x, "MUNICIPALIDAD DE SAN PEDRO SULA", W / 2, H - 60, 7);
   c.toBlob(async (blob) => {
     const nombre = "Pase Zorzal Dorado - " + ficha.n + ".png";

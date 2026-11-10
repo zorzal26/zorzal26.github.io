@@ -141,7 +141,7 @@ button:disabled { opacity: .4; }
 </header>
 
 <main id="sin-clave" class="oculto">
-  <section class="tarjeta"><p style="font-size:16px;line-height:1.45">Este enlace no es el de control. Use el enlace completo que recibió el equipo de la puerta.</p></section>
+  <section class="tarjeta"><p style="font-size:16px;line-height:1.45">Este enlace no corresponde al control de puerta. El enlace completo lo tiene el equipo de la puerta.</p></section>
 </main>
 
 <main id="app" class="oculto">
@@ -338,7 +338,7 @@ async function registrarExtras(r, k, nombres, autoriza) {
 // reglas: hasta MAXEX extras por pase sin autorización; más que eso, o si se acabó el cupo de extras,
 // hace falta el nombre de quien autoriza (supervisor de protocolo). Nunca se pasa de CAP personas en mesa.
 function evaluarExtras(r, k) {
-  if (!k) return { bloqueo: true, cero: true, txt: `Si vienen personas que no están en el listado, márquelas con +. Hasta ${MAXEX} sin autorización.` };
+  if (!k) return { bloqueo: true, cero: true, txt: `Las personas que no están en el listado se marcan con +. Hasta ${MAXEX} por invitado no requieren autorización.` };
   const st = estado();
   const yaTiene = r === SIN ? 0 : st.extrasDe(r);
   const libres = CAP - st.dentro;
@@ -366,7 +366,7 @@ function pintarExtras() {
     <div class="tit">${r === SIN ? "LLEGÓ SIN INVITACIÓN" : "¿VIENE CON ALGUIEN QUE NO ESTÁ EN EL LISTADO?"}</div>
     <div class="reg"></div>
     <div class="paso"><button type="button" class="sec" data-d="-1">−</button><b>${formExtra.k}</b><button type="button" class="sec" data-d="1">+</button></div>
-    <input class="texto${ev.autoriza ? "" : " oculto"}" id="ex-autoriza" placeholder="¿Quién autoriza? (supervisor de protocolo)" autocomplete="off">
+    <input class="texto${ev.autoriza ? "" : " oculto"}" id="ex-autoriza" placeholder="Nombre de quien autoriza (supervisor de protocolo)" autocomplete="off">
     <div class="nota${ev.bloqueo && !ev.cero ? " mal" : ""}"${ev.cero ? ' style="color:var(--suave)"' : ""}></div>
     <div class="botones"><button type="button" class="sec" id="ex-cerrar">${formExtra.k ? "Cancelar" : "Nadie más"}</button><button type="button" id="ex-ok"${ev.bloqueo ? " disabled" : ""}>${formExtra.k ? "Registrar +" + formExtra.k : "Registrar"}</button></div>`;
   caja.querySelector(".reg").textContent = r === SIN ? "Personas que no están en el listado y no vienen con un invitado."
@@ -410,7 +410,7 @@ function pintar() {
     : `Sin conexión${pendientes.length ? " · " + pendientes.length + " por enviar" : ""} · se guarda en este teléfono`;
   const conPase = lista.filter((p) => pase[p.r]);
   const persConPase = conPase.reduce((s, p) => s + p.p, 0);
-  $("rec-v").innerHTML = `<b>${persConPase}</b> de ${ZD.personas} invitados ya generaron su QR · <u>ver quiénes</u>`;
+  $("rec-v").innerHTML = `<b>${persConPase}</b> de ${ZD.personas} invitados ya generaron su QR · <u>ver la lista</u>`;
   $("rec-barra").style.transform = `scaleX(${persConPase / ZD.personas})`;
   const ultimos = conPase.filter((p) => !ing[p.r]).sort((a, b) => pase[b.r] - pase[a.r]).slice(0, 3);
   $("rec-ult").textContent = ultimos.length ? "Últimos: " + ultimos.map((p) => `${p.n} (${hora(pase[p.r])})`).join(" · ") : "";
@@ -472,7 +472,7 @@ function pintar() {
         let conf = 0;
         b.onclick = (ev) => {
           ev.stopPropagation();
-          if (Date.now() - conf > 4000) { conf = Date.now(); b.textContent = "Tocar otra vez para confirmar"; return; }
+          if (Date.now() - conf > 4000) { conf = Date.now(); b.textContent = "Un segundo toque confirma el ingreso"; return; }
           if (CAP - estado().dentro < p.p) { aviso("error", "Capacidad completa", p.n, "No quedan lugares en mesa"); return; }
           abierto = null; registrar(p.r, "Manual");
           aviso("ok", "Ingreso manual", p.n, p.c || p.g, p);
@@ -514,7 +514,7 @@ async function validar(texto) {
     const st = estado();
     if (st.ing[f.r]) aviso("repetido", "Ya ingresó", f.n, "Registrado a las " + hora(st.ing[f.r].h));
     else if (CAP - st.dentro < f.p) aviso("error", "Capacidad completa", f.n, `Quedan ${Math.max(0, CAP - st.dentro)} lugares en mesa`);
-    else { await registrar(f.r, "QR"); aviso("ok", "Válido · Adelante", f.n, [f.c, f.g].filter(Boolean).join(" · "), f); }
+    else { await registrar(f.r, "QR"); aviso("ok", "Válido · Puede ingresar", f.n, [f.c, f.g].filter(Boolean).join(" · "), f); }
     // si ya está adentro, ofrece registrar a quienes llegaron de más con ese pase
     if (estado().ing[f.r]) abrirExtras(f.r, false);
   } catch { aviso("error", "Código no válido", "No pertenece a la lista", codigo); }
@@ -562,7 +562,7 @@ $("camara").addEventListener("click", async () => {
     const v = $("video"); v.srcObject = flujo; await v.play();
     $("video-caja").classList.remove("oculto"); $("camara").textContent = "Detener cámara";
     leerCuadro();
-  } catch { aviso("error", "Sin cámara", "Permita el acceso a la cámara", "o escriba el código abajo"); }
+  } catch { aviso("error", "Sin cámara", "El navegador no tiene permiso para usar la cámara", "El código también se puede escribir abajo"); }
 });
 $("validar").addEventListener("click", () => { ultimo = ""; validar($("manual").value); $("manual").value = ""; });
 $("manual").addEventListener("keydown", (e) => { if (e.key === "Enter") $("validar").click(); });
