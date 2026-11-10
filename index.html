@@ -61,7 +61,7 @@ button { font-family: inherit; }
 .intro svg circle { fill: none; stroke: url(#oroTrazo); stroke-width: 1.2; stroke-dasharray: 640; stroke-dashoffset: 640;
                     animation: trazo 1.6s var(--suave) .2s forwards; }
 .intro svg circle.dos { stroke-width: .6; opacity: .55; animation-delay: .45s; }
-.intro img { width: 92px; opacity: 0; transform: scale(.85); animation: escudo-in 1.1s var(--suave) .7s forwards; }
+.intro img { width: 78px; height: auto; opacity: 0; transform: scale(.85); animation: escudo-in 1.1s var(--suave) .7s forwards; }
 @keyframes escudo-in { to { opacity: 1; transform: none; } }
 .intro .leyenda { position: absolute; top: calc(100% + 26px); left: 50%; width: 300px; margin-left: -150px; text-align: center;
                   font-size: 11px; font-weight: 400; letter-spacing: .42em; color: var(--oro-2); opacity: 0;
@@ -76,7 +76,7 @@ button { font-family: inherit; }
 @keyframes aparece { to { opacity: 1; transform: none; } }
 
 .cabeza { display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 8px; }
-.cabeza .escudo { width: 54px; filter: drop-shadow(0 4px 14px rgba(0,0,0,.4)); }
+.cabeza .escudo { width: 46px; height: auto; filter: drop-shadow(0 4px 14px rgba(0,0,0,.4)); }
 .presenta { margin-top: 14px; font-size: 14.5px; line-height: 1.5; color: var(--texto-suave); }
 .presenta b { font-weight: 600; color: var(--oro-2); }
 
@@ -95,17 +95,62 @@ button { font-family: inherit; }
 .anillo .chispa svg { width: 100%; height: 100%; display: block; }
 @keyframes gira { to { transform: rotate(360deg); } }
 @keyframes titila { 0%, 100% { opacity: .25; transform: scale(.55) rotate(0deg); } 50% { opacity: 1; transform: scale(1) rotate(45deg); } }
-.trofeo-caja { position: absolute; inset: 4% 6% 2%; transform-style: preserve-3d; transition: transform .6s var(--suave); }
-.trofeo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;
-          animation: flota 6s ease-in-out infinite; filter: drop-shadow(0 22px 30px rgba(0,0,0,.45)); }
-@keyframes flota { 50% { transform: translate3d(0, -10px, 0); } }
-.entra-trofeo { opacity: 0; transform: translate3d(0, 40px, 0) scale(.88); }
-.listo-pagina .entra-trofeo { animation: trofeo-in 1.6s var(--suave) .25s forwards; }
-@keyframes trofeo-in { to { opacity: 1; transform: none; } }
-.destello { position: absolute; left: 50%; top: 18%; width: 90px; height: 90px; margin-left: -10px; opacity: 0; color: #fff;
+.rayos { position: absolute; inset: -6%; border-radius: 50%; opacity: .5; animation: gira 40s linear infinite;
+         background: repeating-conic-gradient(from 0deg, rgba(255,236,170,.16) 0deg 4deg, transparent 4deg 18deg);
+         -webkit-mask: radial-gradient(circle, #000 18%, transparent 62%); mask: radial-gradient(circle, #000 18%, transparent 62%); }
+/* trofeo por capas: base + zorzal (el ave se mueve sola) + brillo metálico recortado a la silueta */
+.trofeo-caja { position: absolute; left: 12%; width: 76%; top: 5%; aspect-ratio: 646 / 699; transform-style: preserve-3d; transition: transform .6s var(--suave); cursor: pointer; }
+.trofeo-flota { position: absolute; inset: 0; animation: flota 6s ease-in-out infinite; }
+@keyframes flota { 50% { transform: translate3d(0, -9px, 0); } }
+.capa { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.t-base { filter: drop-shadow(0 22px 26px rgba(0,0,0,.5)); }
+.t-ave-caja, .t-ave { transform-origin: 40% 47.5%; }      /* pivote = las patas sobre el engranaje */
+.t-ave { filter: drop-shadow(0 10px 14px rgba(0,0,0,.35)); }
+.listo-pagina .t-ave { animation: vive 9s ease-in-out 3.2s infinite; }
+@keyframes vive {                                          /* respira, mira abajo, levanta la cabeza */
+  0%, 100% { transform: none; } 18% { transform: scale(1.012, 1.018); } 34% { transform: none; }
+  52% { transform: rotate(-5deg); } 57% { transform: rotate(-4deg); } 63% { transform: rotate(2.5deg); } 70%, 99% { transform: none; } }
+.t-brillo { position: absolute; inset: 0; overflow: hidden; pointer-events: none; mix-blend-mode: screen;
+            -webkit-mask: var(--m) center / 100% 100% no-repeat; mask: var(--m) center / 100% 100% no-repeat; }
+.t-base-caja .t-brillo { --m: url(img/zorzal-base.webp); }
+.t-ave-caja .t-brillo { --m: url(img/zorzal-ave.webp); }
+.t-ave-caja .t-brillo::before { animation-delay: 3.55s; }
+.t-brillo::before { content: ""; position: absolute; top: -20%; bottom: -20%; left: -60%; width: 45%;
+                    background: linear-gradient(100deg, transparent, rgba(255,250,225,.85) 50%, transparent);
+                    transform: translate3d(-40%, 0, 0) skewX(-12deg); animation: lustre 6s ease-in-out 3.4s infinite; }
+.listo-pagina .t-ave + .t-brillo { animation: vive 9s ease-in-out 3.2s infinite; transform-origin: 40% 47.5%; }
+@keyframes lustre { 0% { transform: translate3d(-40%, 0, 0) skewX(-12deg); } 30%, 100% { transform: translate3d(420%, 0, 0) skewX(-12deg); } }
+/* entrada: sube la base y el zorzal llega volando hasta posarse */
+.t-base-caja { position: absolute; inset: 0; opacity: 0; transform: translate3d(0, 40px, 0) scale(.94); }
+.listo-pagina .t-base-caja { animation: base-in 1.3s var(--suave) .2s forwards; }
+@keyframes base-in { to { opacity: 1; transform: none; } }
+.t-ave-caja { position: absolute; inset: 0; opacity: 0; }
+.listo-pagina .t-ave-caja { animation: vuelo 1.9s cubic-bezier(.3,.7,.3,1) 1s forwards; }
+@keyframes vuelo {
+  0% { opacity: 0; transform: translate3d(85%, -95%, 0) rotate(-24deg) scale(.45); }
+  15% { opacity: 1; }
+  55% { transform: translate3d(14%, -22%, 0) rotate(-10deg) scale(.85); }
+  78% { transform: translate3d(0, -3%, 0) rotate(5deg) scale(1.02); }
+  90% { transform: translate3d(0, .8%, 0) rotate(-2deg) scale(.995, .98); }
+  100% { opacity: 1; transform: none; } }
+.t-ave-caja.salta { opacity: 1; animation: salto .9s var(--suave) both !important; }
+@keyframes salto { 0% { transform: none; } 30% { transform: translate3d(0, -13%, 0) rotate(-7deg); } 62% { transform: translate3d(0, 1%, 0) rotate(2deg) scale(1, .97); } 100% { transform: none; } }
+/* zorzales dorados que cruzan el fondo */
+.vuela { position: absolute; left: 0; width: 46px; opacity: 0; color: var(--oro-2); will-change: transform, opacity; }
+.vuela svg { width: 100%; display: block; overflow: visible; }
+.vuela .ala { transform-box: fill-box; transform-origin: 50% 100%; animation: aletea .42s ease-in-out infinite alternate; }
+.vuela .ala.d { transform-origin: 50% 0; animation-name: aletea-d; }
+@keyframes aletea { to { transform: scaleY(-.55); } }
+@keyframes aletea-d { to { transform: scaleY(-.4); } }
+.vuela.v1 { top: 16vh; animation: cruza 19s linear 4s infinite; }
+.vuela.v2 { top: 34vh; width: 30px; animation: cruza 26s linear 11s infinite; }
+.vuela.v3 { top: 62vh; width: 38px; animation: cruza-i 23s linear 7s infinite; }
+@keyframes cruza { 0% { transform: translate3d(-15vw, 0, 0); opacity: 0; } 6% { opacity: .45; } 30% { transform: translate3d(35vw, -5vh, 0); } 60% { transform: translate3d(70vw, 3vh, 0); opacity: .4; } 72%, 100% { transform: translate3d(112vw, -6vh, 0); opacity: 0; } }
+@keyframes cruza-i { 0% { transform: translate3d(112vw, 0, 0) scaleX(-1); opacity: 0; } 6% { opacity: .35; } 45% { transform: translate3d(50vw, -8vh, 0) scaleX(-1); } 70%, 100% { transform: translate3d(-15vw, -2vh, 0) scaleX(-1); opacity: 0; } }
+.destello { position: absolute; left: 70%; top: 10%; width: 46px; height: 46px; opacity: 0; color: #fff;
             filter: drop-shadow(0 0 10px #fff); animation: estrella 5s ease-in-out 2.2s infinite; }
 @keyframes estrella { 0%, 70%, 100% { opacity: 0; transform: scale(.2) rotate(0); } 80% { opacity: 1; transform: scale(1) rotate(90deg); } 90% { opacity: 0; transform: scale(.4) rotate(160deg); } }
-.piso { position: absolute; left: 14%; right: 14%; bottom: 0; height: 16%; border-radius: 50%;
+.piso { position: absolute; left: 12%; right: 12%; bottom: 2%; height: 14%; border-radius: 50%;
         background: radial-gradient(ellipse at center, rgba(255,226,150,.45), transparent 70%); filter: blur(6px); animation: respira 6s ease-in-out infinite; }
 
 /* ---------- título */
@@ -236,7 +281,7 @@ a.boton { text-decoration: none; }
 .revelar .holo { animation: holo-in 1.6s var(--suave) 1s both; }
 @keyframes holo-in { from { transform: translate3d(-70%, 0, 0); } to { transform: translate3d(40%, 0, 0); } }
 .p-cabeza { position: relative; display: flex; align-items: center; gap: 12px; padding: 18px 20px 0; }
-.p-cabeza img { width: 66px; height: 66px; object-fit: contain; filter: drop-shadow(0 6px 10px rgba(0,0,0,.4)); }
+.p-cabeza img { width: 62px; height: 68px; object-fit: contain; flex: none; filter: drop-shadow(0 6px 10px rgba(0,0,0,.4)); }
 .p-cabeza .t1 { font-size: 9.5px; font-weight: 500; letter-spacing: .4em; color: var(--oro-3); }
 .p-cabeza .t2 { font-size: 22px; font-weight: 700; letter-spacing: .02em; line-height: 1; margin-top: 4px; text-transform: uppercase;
                 background: var(--foil); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -303,11 +348,14 @@ a.boton { text-decoration: none; }
 
 /* ================= PIE */
 .firma { margin-top: 34px; text-align: center; }
-.firma img { width: 190px; opacity: .85; }
+.firma .edificio { width: min(250px, 70%); height: auto; opacity: .9; }
+.firma .muni { display: block; width: 150px; height: auto; margin: 22px auto 0; opacity: .9; }
 .firma .a { margin-top: 10px; font-size: 13px; font-weight: 500; letter-spacing: .32em; text-indent: .32em; color: var(--oro-2); }
 .firma .b { margin-top: 4px; font-size: 9.5px; font-weight: 400; letter-spacing: .3em; text-indent: .3em; color: var(--texto-suave); }
 
 @media (prefers-reduced-motion: reduce) {
+  .t-base-caja, .t-ave-caja { opacity: 1 !important; transform: none !important; }
+  .vuela { display: none; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; animation-delay: 0ms !important; transition-duration: .01ms !important; }
   .polvo, .haz { display: none; }
 }
@@ -322,6 +370,11 @@ a.boton { text-decoration: none; }
   <defs>
     <linearGradient id="oroTrazo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9c7330"/><stop offset=".5" stop-color="#fff1c4"/><stop offset="1" stop-color="#d4a94e"/></linearGradient>
     <symbol id="estrella" viewBox="0 0 24 24"><path fill="currentColor" d="M12 0c.6 6.2 5.8 11.4 12 12-6.2.6-11.4 5.8-12 12-.6-6.2-5.8-11.4-12-12C6.2 11.4 11.4 6.2 12 0z"/></symbol>
+    <symbol id="ave-vuela" viewBox="0 0 48 24"><g fill="currentColor">
+      <path d="M12 14c5-3 12-4 19-3l7-3c2-.6 3.4.3 3.6 1.2L46 10l-4.2 1.2c-.6 2.6-3.2 4.6-7 5L20 17c-3 .1-6-.8-8-3z"/>
+      <path d="M12 14l-7-3.5 2.6 4.6L4 17.6l8-1.6z"/>
+      <path class="ala" d="M22 12c2-5 6-9.5 12-11-2.6 4.2-4 7.6-4.6 11z"/>
+      <path class="ala d" d="M22 13.4c3 2.6 6 6.8 9 9.6-.6-3.6-.8-6.6-.4-9.6z" opacity=".75"/></g></symbol>
     <symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></g></symbol>
     <symbol id="i-lugar" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0113 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></g></symbol>
     <symbol id="i-hora" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></g></symbol>
@@ -335,6 +388,9 @@ a.boton { text-decoration: none; }
   <div class="luz a"></div><div class="luz b"></div>
   <div class="haz i"></div><div class="haz d"></div>
   <div class="grano"></div>
+  <div class="vuela v1"><svg viewBox="0 0 48 24"><use href="#ave-vuela"/></svg></div>
+  <div class="vuela v2"><svg viewBox="0 0 48 24"><use href="#ave-vuela"/></svg></div>
+  <div class="vuela v3"><svg viewBox="0 0 48 24"><use href="#ave-vuela"/></svg></div>
 </div>
 
 <div id="intro" class="intro" aria-hidden="true">
@@ -356,6 +412,7 @@ a.boton { text-decoration: none; }
     </header>
 
     <div class="escena" id="escena" aria-hidden="true">
+      <div class="rayos"></div>
       <div class="halo"></div>
       <div class="anillo r3"></div>
       <div class="anillo r1">
@@ -368,8 +425,11 @@ a.boton { text-decoration: none; }
         <span class="chispa" style="left:0;top:50%;width:11px;height:11px;margin:-5.5px;animation-delay:-1.2s"><svg><use href="#estrella"/></svg></span>
       </div>
       <div class="piso"></div>
-      <div class="trofeo-caja" id="trofeo-caja">
-        <img class="trofeo entra-trofeo" src="img/trofeo.webp" alt="Trofeo Zorzal Dorado">
+      <div class="trofeo-caja" id="trofeo-caja" role="img" aria-label="Trofeo Zorzal Dorado">
+        <div class="trofeo-flota">
+          <div class="t-base-caja"><img class="capa t-base" src="img/zorzal-base.webp" alt=""><div class="t-brillo"></div></div>
+          <div class="t-ave-caja" id="ave"><img class="capa t-ave" src="img/zorzal-ave.webp" alt=""><div class="t-brillo"></div></div>
+        </div>
       </div>
       <svg class="destello"><use href="#estrella"/></svg>
     </div>
@@ -462,9 +522,10 @@ a.boton { text-decoration: none; }
   </section>
 
   <footer class="firma">
-    <img src="img/alcaldia.webp" alt="">
+    <img class="edificio" src="img/alcaldia.webp" alt="Palacio Municipal">
     <div class="a">ROBERTO CONTRERAS</div>
     <div class="b">ALCALDE MUNICIPAL DE SAN PEDRO SULA</div>
+    <img class="muni" src="img/muni.webp" alt="Municipalidad de San Pedro Sula">
   </footer>
 </div>
 
@@ -530,6 +591,13 @@ function inclinar(zona, objetivo, fuerza, alMover) {
   zona.addEventListener("pointerleave", () => { objetivo.style.transform = ""; alMover?.(0, 0); });
 }
 inclinar($("escena"), $("trofeo-caja"), 10);
+// toque al trofeo: el zorzal da un saltito y suelta destellos
+$("trofeo-caja").addEventListener("click", () => {
+  const ave = $("ave"); if (quieto || ave.classList.contains("salta")) return;
+  ave.classList.add("salta"); if (navigator.vibrate) navigator.vibrate(15);
+  const r = $("trofeo-caja").getBoundingClientRect(); lluvia(r.left + r.width * .45, r.top + r.height * .25, 40);
+  setTimeout(() => ave.classList.remove("salta"), 950);
+});
 inclinar($("pase"), $("pase"), 7, (dx, dy) => { $("holo").style.setProperty("--hx", dx * 35 + "%"); $("holo").style.setProperty("--hy", dy * 20 + "%"); });
 
 // ---------- cuenta regresiva
@@ -651,14 +719,14 @@ $("otro").addEventListener("click", () => {
 });
 
 // ---------- lluvia de destellos dorados al confirmar el pase (canvas, ~2.5 s)
-function lluvia() {
+function lluvia(ox, oy, cantidad = 130) {
   if (quieto) return;
   const c = $("lluvia"), x = c.getContext("2d"), dpr = Math.min(2, devicePixelRatio || 1);
   const W = innerWidth, H = innerHeight; c.width = W * dpr; c.height = H * dpr; x.scale(dpr, dpr);
   const colores = ["#fff1c4", "#f1d58a", "#d4a94e", "#b8893a", "#ffffff"];
-  const ps = Array.from({ length: 130 }, (_, i) => {
+  const ps = Array.from({ length: cantidad }, (_, i) => {
     const ang = -Math.PI / 2 + (Math.random() - .5) * 2.2, v = 6 + Math.random() * 9;
-    return { x: W / 2, y: H * .42, vx: Math.cos(ang) * v, vy: Math.sin(ang) * v, r: 2 + Math.random() * 4, rot: Math.random() * 6, vr: (Math.random() - .5) * .3,
+    return { x: ox ?? W / 2, y: oy ?? H * .42, vx: Math.cos(ang) * v, vy: Math.sin(ang) * v, r: 2 + Math.random() * 4, rot: Math.random() * 6, vr: (Math.random() - .5) * .3,
              col: colores[i % colores.length], estrella: i % 7 === 0, vida: 1 };
   });
   const t0 = performance.now();
@@ -668,7 +736,7 @@ function lluvia() {
     let vivas = 0;
     for (const p of ps) {
       p.vy += .22 * dt; p.vx *= .99; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
-      p.vida = Math.max(0, 1 - (t - t0) / 2600);
+      p.vida = Math.max(0, 1 - (t - t0) / (cantidad < 100 ? 1500 : 2600));
       if (p.y > H + 20 || p.vida <= 0) continue;
       vivas++;
       x.save(); x.globalAlpha = p.vida; x.translate(p.x, p.y); x.rotate(p.rot); x.fillStyle = p.col;
