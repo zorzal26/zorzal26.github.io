@@ -114,7 +114,8 @@ button { font-family: inherit; }
 .listo-pagina .foco { animation: foco 2.8s var(--suave) .35s forwards; }
 @keyframes foco { 0% { opacity: 0; transform: scaleX(.3); } 35% { opacity: 1; transform: scaleX(1); } 100% { opacity: .35; transform: scaleX(1.1); } }
 /* trofeo completo: aparece girando desde la luz, después respira y oscila en 3D */
-.trofeo-caja { position: absolute; left: 13%; width: 74%; top: 5%; aspect-ratio: 646 / 699; perspective: 1000px; cursor: pointer; }
+/* el eje del pedestal (35,4 % del ancho de la imagen) queda al centro */
+.trofeo-caja { position: absolute; left: 23.8%; width: 74%; top: 5%; aspect-ratio: 646 / 699; perspective: 1000px; cursor: pointer; }
 .trofeo-giro { position: absolute; inset: 0; transform-style: preserve-3d; opacity: 0; }
 .listo-pagina .trofeo-giro { animation: trofeo-in 2.2s cubic-bezier(.16, 1, .3, 1) .5s forwards, balanceo 9s ease-in-out 2.7s infinite alternate; }
 @keyframes trofeo-in {
@@ -193,10 +194,10 @@ button { font-family: inherit; }
           box-shadow: inset 0 1px 0 var(--vidrio-luz), 0 30px 60px -30px rgba(0,0,0,.75);
           -webkit-backdrop-filter: var(--desenfoque); backdrop-filter: var(--desenfoque); }
 .etq { font-size: 11px; font-weight: 500; letter-spacing: .4em; text-indent: .4em; color: var(--oro-2); text-align: center; }
-.pin { position: relative; margin: 16px auto 0; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; max-width: 340px; }
+.pin { position: relative; margin: 16px auto 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 280px; }
 .pin input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; font-size: 16px; z-index: 2; caret-color: transparent; }
 .casilla { position: relative; aspect-ratio: .82; border-radius: 12px; display: grid; place-items: center;
-           font-weight: 500; font-size: 28px; color: var(--marfil);
+           font-weight: 500; font-size: 32px; color: var(--marfil);
            background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12);
            box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
            transition: border-color .25s, transform .25s var(--suave); }
@@ -219,7 +220,7 @@ button { font-family: inherit; }
 .ayuda { text-align: center; font-size: 13.5px; color: var(--texto-suave); line-height: 1.45; }
 
 .boton { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
-         margin-top: 10px; padding: 17px 18px; border: 0; border-radius: 14px; cursor: pointer;
+         margin-top: 16px; padding: 17px 18px; border: 0; border-radius: 14px; cursor: pointer;
          font-size: 13.5px; font-weight: 600; letter-spacing: .2em; color: #2b1c05;
          background: linear-gradient(180deg, var(--oro-1), var(--oro-2) 45%, var(--oro-3));
          box-shadow: 0 14px 28px -12px rgba(212,169,78,.8), inset 0 1px 0 rgba(255,255,255,.7), inset 0 -2px 0 rgba(107,76,28,.25);
@@ -235,9 +236,10 @@ a.boton { text-decoration: none; }
              -webkit-backdrop-filter: var(--desenfoque); backdrop-filter: var(--desenfoque); }
 .boton.sec svg { color: var(--oro-2); }
 .boton.sec::after { display: none; }
-.dupla { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dupla { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+.dupla .boton { margin-top: 0; }
 .dupla .boton { padding: 14px 10px; font-size: 11.5px; letter-spacing: .14em; }
-.enlace { display: block; margin: 18px auto 0; background: none; border: 0; font-size: 14px; font-weight: 400;
+.enlace { display: block; margin: 24px auto 0; background: none; border: 0; font-size: 14px; font-weight: 400;
           color: rgba(251,246,232,.55); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
 
 /* ================= PASE */
@@ -304,7 +306,7 @@ a.boton { text-decoration: none; }
 
 #v-pase .escalon { opacity: 0; }
 .revelar .escalon { animation: aparece .8s var(--suave) forwards; animation-delay: calc(var(--i) * 90ms + 700ms); }
-.mini-cuenta { margin-top: 14px; text-align: center; font-size: 13px; color: var(--texto-suave); }
+.mini-cuenta { margin-top: 20px; margin-bottom: 6px; text-align: center; font-size: 13px; color: var(--texto-suave); }
 .mini-cuenta b { color: var(--oro-1); font-weight: 600; font-variant-numeric: tabular-nums; }
 
 /* lluvia dorada al confirmar */
@@ -429,13 +431,13 @@ a.boton { text-decoration: none; }
     <form id="form" class="vidrio aparece" style="--i:7" autocomplete="off">
       <div class="etq">PIN DE INVITACIÓN</div>
       <div id="pin" class="pin">
-        <input id="campo" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="6" aria-label="PIN de 6 dígitos">
+        <input id="campo" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="4" aria-label="PIN de 4 dígitos">
         <div class="casilla" style="--k:0"></div><div class="casilla" style="--k:1"></div><div class="casilla" style="--k:2"></div>
-        <div class="casilla" style="--k:3"></div><div class="casilla" style="--k:4"></div><div class="casilla" style="--k:5"></div>
+        <div class="casilla" style="--k:3"></div>
       </div>
       <div id="msg" class="msg" role="alert"></div>
       <button id="btn" class="boton" type="submit" disabled>VER MI PASE</button>
-      <p class="ayuda" style="margin-top:12px">Escriba los 6 dígitos que recibió con su invitación.</p>
+      <p class="ayuda" style="margin-top:12px">Escriba los 4 dígitos que recibió con su invitación.</p>
     </form>
   </section>
 
@@ -602,15 +604,15 @@ function pintarPin() {
     const d = v[i] || "";
     if ((c.dataset.d || "") !== d) { c.dataset.d = d; c.innerHTML = d ? `<span>${d}</span>` : ""; }
     c.classList.toggle("lleno", !!d);
-    c.classList.toggle("actual", i === Math.min(v.length, 5) && document.activeElement === campo);
+    c.classList.toggle("actual", i === Math.min(v.length, 3) && document.activeElement === campo);
   });
-  $("btn").disabled = v.length !== 6 || ocupado;
+  $("btn").disabled = v.length !== 4 || ocupado;
 }
 campo.addEventListener("input", () => {
-  campo.value = campo.value.replace(/\D/g, "").slice(0, 6);
+  campo.value = campo.value.replace(/\D/g, "").slice(0, 4);
   caja.classList.remove("mal"); $("msg").classList.remove("ver");
   pintarPin();
-  if (campo.value.length === 6) entrar();
+  if (campo.value.length === 4) entrar();
 });
 campo.addEventListener("focus", () => { caja.classList.add("foco"); pintarPin(); });
 campo.addEventListener("blur", () => { caja.classList.remove("foco"); pintarPin(); });
@@ -627,7 +629,7 @@ function qrCanvas(texto, px) {
 
 async function entrar() {
   const pin = campo.value;
-  if (pin.length !== 6 || ocupado) return;
+  if (pin.length !== 4 || ocupado) return;
   ocupado = true; pintarPin(); campo.blur();
   caja.classList.add("pensando");
   try {
@@ -774,7 +776,7 @@ $("guardar").addEventListener("click", async () => {
   const halo = x.createRadialGradient(W / 2, 360, 10, W / 2, 360, 330); halo.addColorStop(0, "rgba(255,226,150,.55)"); halo.addColorStop(1, "rgba(255,226,150,0)");
   x.fillStyle = halo; x.fillRect(0, 0, W, 760);
   if (esc) x.drawImage(esc, W / 2 - 40, 60, 80, 80 * esc.height / esc.width);
-  if (tro) { const h = 470, w = h * tro.width / tro.height; x.drawImage(tro, W / 2 - w / 2, 170, w, h); }
+  if (tro) { const h = 470, w = h * tro.width / tro.height; x.drawImage(tro, W / 2 - w * .354, 170, w, h); }
   x.textAlign = "center";
   x.fillStyle = "#f1d58a"; x.font = "500 24px Outfit"; espaciado(x, "TERCERA EDICIÓN", W / 2, 690, 9);
   x.fillStyle = oro(700, 790); x.font = "700 104px Outfit"; x.fillText("ZORZAL DORADO", W / 2, 795);
@@ -824,7 +826,7 @@ async function avisarPase(f) {
 (async function () {
   const h = location.hash.slice(1).replace(/\D/g, "");
   const previo = guardado.leer("zd-pase");
-  if (h.length === 6) {
+  if (h.length === 4) {
     history.replaceState(null, "", location.pathname);
     if (previo && previo.q) { const f = await fichaPorPin(h).catch(() => null); if (f && f.q === previo.q) { mostrar(previo, false); return; } }
     await espera(quieto ? 0 : 1300);
