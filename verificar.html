@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#021a0e">
+<title>Control de ingreso · Zorzal Dorado</title>
+<link rel="icon" href="img/trofeo.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --fondo-0: #010f08; --fondo-1: #021a0e; --fondo-2: #063a22; --fondo-3: #0b5232;
+  --oro-1: #fff1c4; --oro-2: #f1d58a; --oro-3: #d4a94e; --oro-4: #9c7330;
+  --marfil: #fbf6e8; --suave: rgba(251,246,232,.62); --linea: rgba(241,213,138,.16);
+  --ok: #1f9d5a; --alerta: #c98a12; --error: #c4392e;
+  --sans: "Outfit", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { background: var(--fondo-1); -webkit-text-size-adjust: 100%; }
+body { font-family: var(--sans); font-weight: 400; color: var(--marfil); min-height: 100vh;
+       background: radial-gradient(120% 60% at 50% 0%, var(--fondo-3), var(--fondo-2) 35%, var(--fondo-1) 75%, var(--fondo-0)) fixed;
+       padding: max(14px, env(safe-area-inset-top)) 16px max(50px, env(safe-area-inset-bottom)); }
+button, input, select { font-family: inherit; }
+.oculto { display: none !important; }
+.envase { max-width: 520px; margin: 0 auto; }
+header { display: flex; align-items: center; gap: 12px; padding: 4px 0 14px; border-bottom: 1px solid var(--linea); }
+header img { width: 52px; height: 52px; object-fit: contain; }
+header .t1 { font-size: 10px; font-weight: 500; letter-spacing: .38em; color: var(--oro-3); }
+header .t2 { font-size: 22px; font-weight: 700; text-transform: uppercase; line-height: 1.05; margin-top: 2px;
+             background: linear-gradient(180deg, var(--oro-1), var(--oro-3)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+header .t3 { font-size: 12px; color: var(--suave); margin-top: 2px; }
+.tarjeta { margin-top: 14px; padding: 16px; border-radius: 22px; background: linear-gradient(160deg, rgba(255,255,255,.09), rgba(255,255,255,.025));
+           border: 1px solid var(--linea); }
+.cifras { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.cifra { text-align: center; padding: 10px 4px; border-radius: 16px; background: rgba(0,0,0,.2); }
+.cifra b { font-size: 42px; font-weight: 600; line-height: 1; color: var(--oro-1); font-variant-numeric: tabular-nums; }
+.cifra span { font-size: 17px; color: var(--suave); }
+.cifra .e { font-size: 10px; letter-spacing: .26em; color: var(--oro-3); font-weight: 500; margin-top: 6px; }
+.cifra .s { font-size: 12px; color: var(--suave); margin-top: 2px; }
+.barra { height: 6px; margin-top: 12px; border-radius: 99px; background: rgba(255,255,255,.08); overflow: hidden; }
+.barra i { display: block; height: 100%; width: 100%; transform-origin: left; transform: scaleX(0); transition: transform .6s;
+           background: linear-gradient(90deg, var(--oro-4), var(--oro-1)); }
+.estado-red { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--suave); }
+.estado-red i { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+.estado-red.mal i { background: var(--error); box-shadow: 0 0 8px var(--error); }
+button { display: block; width: 100%; margin-top: 12px; padding: 15px; border: 0; border-radius: 16px; cursor: pointer;
+         font-size: 14px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #2b1c05;
+         background: linear-gradient(180deg, var(--oro-1), var(--oro-2) 45%, var(--oro-3)); }
+button:active { transform: scale(.98); }
+button.sec { color: var(--oro-1); background: rgba(255,255,255,.06); border: 1px solid rgba(241,213,138,.3); }
+#video-caja { position: relative; margin-top: 12px; border-radius: 18px; overflow: hidden; background: #000; aspect-ratio: 1; }
+#video { width: 100%; height: 100%; object-fit: cover; display: block; }
+#video-caja::after { content: ""; position: absolute; inset: 18%; border: 3px solid rgba(241,213,138,.9); border-radius: 16px; }
+.resultado { margin-top: 12px; border-radius: 18px; padding: 18px 16px; text-align: center; color: #fff; }
+.resultado .estado { font-size: 12px; letter-spacing: .3em; font-weight: 600; text-transform: uppercase; }
+.resultado .quien { font-size: 24px; font-weight: 600; margin-top: 6px; line-height: 1.15; }
+.resultado .detalle { font-size: 15px; margin-top: 4px; opacity: .92; }
+.resultado .personas { display: inline-block; margin-top: 10px; padding: 6px 14px; border-radius: 99px; background: rgba(0,0,0,.22); font-size: 18px; font-weight: 600; }
+.r-ok { background: var(--ok); } .r-repetido { background: var(--alerta); } .r-error { background: var(--error); }
+.fila-manual { display: flex; gap: 8px; margin-top: 12px; }
+.fila-manual button { width: auto; margin: 0; padding: 0 18px; }
+input.texto, select { width: 100%; padding: 13px 14px; border-radius: 14px; font-size: 16px; color: var(--marfil);
+                      background: rgba(0,0,0,.25); border: 1px solid rgba(241,213,138,.22); outline: none; }
+input.texto::placeholder { color: rgba(251,246,232,.4); }
+select { margin-top: 8px; appearance: none; -webkit-appearance: none; }
+select option { color: #111; }
+label { display: block; font-size: 11px; letter-spacing: .3em; font-weight: 500; color: var(--oro-3); margin-bottom: 10px; }
+.filtros { display: flex; gap: 6px; margin: 10px 0; }
+.filtros button { margin: 0; padding: 9px 4px; font-size: 12px; letter-spacing: .06em; color: var(--oro-2); background: transparent; border: 1px solid rgba(241,213,138,.25); }
+.filtros button.si { color: #2b1c05; background: var(--oro-2); }
+ul.lista { list-style: none; }
+ul.lista li { padding: 11px 2px; border-bottom: 1px solid var(--linea); }
+.grupo-tit { padding: 14px 2px 6px !important; font-size: 10.5px; letter-spacing: .26em; color: var(--oro-3); font-weight: 600; text-transform: uppercase; border-bottom: 0 !important; }
+.fila { display: flex; justify-content: space-between; align-items: center; gap: 10px; cursor: pointer; }
+.fila .nom { font-size: 16px; font-weight: 500; line-height: 1.2; }
+.fila .nom small { font-size: 12px; font-weight: 600; color: var(--oro-2); margin-left: 6px; }
+.fila .car { font-size: 12.5px; color: var(--suave); margin-top: 2px; line-height: 1.3; }
+.chip { flex: none; font-size: 11.5px; font-weight: 600; padding: 5px 9px; border-radius: 99px; white-space: nowrap; }
+.chip.in { background: rgba(31,157,90,.2); color: #6fe0a2; }
+.chip.pase { background: rgba(201,138,18,.18); color: #f3c66a; }
+.chip.no { background: rgba(255,255,255,.07); color: var(--suave); }
+.acciones button { margin-top: 8px; padding: 11px; font-size: 13px; }
+.pie { margin-top: 24px; text-align: center; font-size: 10px; letter-spacing: .3em; color: var(--suave); }
+</style>
+</head>
+<body>
+<div class="envase">
+<header>
+  <img src="img/trofeo.webp" alt="">
+  <div><div class="t1">CONTROL DE INGRESO</div><div class="t2">Zorzal Dorado</div><div class="t3">Viernes 13 de noviembre · Plaza de las Banderas</div></div>
+</header>
+
+<main id="sin-clave" class="oculto">
+  <section class="tarjeta"><p style="font-size:16px;line-height:1.45">Este enlace no es el de control. Use el enlace completo que recibió el equipo de la puerta.</p></section>
+</main>
+
+<main id="app" class="oculto">
+  <section class="tarjeta">
+    <div class="cifras">
+      <div class="cifra"><b id="n-in">0</b><span> / <span id="t-personas"></span></span><div class="e">PERSONAS</div><div class="s" id="s-pases"></div></div>
+      <div class="cifra"><b id="n-pase">0</b><span> / <span id="t-pases"></span></span><div class="e">PASES ABIERTOS</div><div class="s">ya vieron su pase</div></div>
+    </div>
+    <div class="barra"><i id="barra"></i></div>
+    <div id="red" class="estado-red"><i></i><span id="red-txt">Conectando…</span></div>
+    <button id="camara" type="button">Escanear</button>
+    <div id="video-caja" class="oculto"><video id="video" playsinline muted></video></div>
+    <div id="resultado" class="resultado oculto">
+      <div id="r-estado" class="estado"></div>
+      <div id="r-quien" class="quien"></div>
+      <div id="r-detalle" class="detalle"></div>
+      <div id="r-personas" class="personas oculto"></div>
+    </div>
+    <div class="fila-manual">
+      <input id="manual" class="texto" placeholder="Código escrito (ZD26-…)" autocomplete="off" autocapitalize="characters">
+      <button id="validar" type="button" class="sec">Validar</button>
+    </div>
+  </section>
+
+  <section class="tarjeta">
+    <label>LISTADO DE INVITADOS</label>
+    <input id="buscar" class="texto" placeholder="Buscar nombre o acompañante" autocomplete="off">
+    <select id="grupo"><option value="">Todos los anfitriones</option></select>
+    <div class="filtros">
+      <button type="button" data-f="todos" class="si">Todos</button>
+      <button type="button" data-f="faltan">Faltan</button>
+      <button type="button" data-f="in">Ingresaron</button>
+    </div>
+    <ul id="lista" class="lista"></ul>
+    <button id="excel" type="button">Descargar Excel</button>
+  </section>
+</main>
+<div class="pie">MUNICIPALIDAD DE SAN PEDRO SULA</div>
+</div>
+
+<script src="lib/jsQR.js"></script>
+<script src="lib/xlsx.mini.min.js"></script>
+<script src="datos.js"></script>
+<script src="comun.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const hora = (t) => new Date(t).toLocaleTimeString("es-HN", { hour: "numeric", minute: "2-digit" });
+const deB64url = (s) => deB64(s.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((s.length + 3) % 4));
+const sinTilde = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+const quienes = (p) => p.p > 1 ? `${p.p} personas` : "1 persona";
+
+let firma = null, lista = [], porRef = {};
+let eventos = guardado.leer("zd-eventos") || {};        // id → evento ya visto en el canal
+let pendientes = guardado.leer("zd-pendientes") || [];  // eventos propios aún sin enviar
+const validos = {};                                     // id → firma comprobada
+let filtro = "todos", abierto = null, enLinea = false, ultimaSync = 0;
+let flujo = null, detector = null, ocupado = false, ultimo = "", ultimoT = 0;
+
+// ---------- firma de los ingresos (solo el equipo tiene la clave)
+async function firmar(e) {
+  const s = new Uint8Array(await crypto.subtle.sign("HMAC", firma, enc.encode(`in|${e.r}|${e.h}|${e.m}`)));
+  return hex(s).slice(0, 32);
+}
+
+// ---------- estado derivado de los eventos
+function estado() {
+  const ing = {}, pase = {};
+  const todos = [...Object.entries(eventos), ...pendientes.map((e) => [e.id, e])];
+  for (const [id, e] of todos) {
+    if (!porRef[e.r]) continue;
+    if (e.t === "in" && validos[id]) { if (!ing[e.r] || e.h < ing[e.r].h) ing[e.r] = e; }
+    if (e.t === "pase") { const h = e.time ? e.time * 1000 : e.h; if (!pase[e.r] || h < pase[e.r]) pase[e.r] = h; }
+  }
+  for (const r in ing) if (!pase[r]) pase[r] = ing[r].h;
+  return { ing, pase };
+}
+
+async function sumar(msjs) {
+  let cambio = false;
+  for (const m of msjs) {
+    if (eventos[m.id]) continue;
+    let e; try { e = JSON.parse(m.message); } catch { continue; }
+    if (!e || !porRef[e.r] || (e.t !== "in" && e.t !== "pase")) continue;
+    e.time = m.time; eventos[m.id] = e; cambio = true;
+  }
+  if (cambio) { await comprobar(); guardado.poner("zd-eventos", eventos); }
+  return cambio;
+}
+async function comprobar() {
+  for (const [id, e] of [...Object.entries(eventos), ...pendientes.map((p) => [p.id, p])])
+    if (e.t === "in" && validos[id] === undefined) validos[id] = e.s === await firmar(e);
+}
+
+// ---------- sincronización: lectura completa cada 15 s + avisos al instante
+async function sincronizar() {
+  try {
+    for (const p of [...pendientes]) {
+      const { id, ...ev } = p;
+      const r = await enviar(ev);
+      eventos[r.id] = { ...ev, time: r.time }; validos[r.id] = true;
+      pendientes = pendientes.filter((x) => x.id !== id);
+    }
+    guardado.poner("zd-pendientes", pendientes); guardado.poner("zd-eventos", eventos);
+    await sumar(await leerCanal());
+    enLinea = true; ultimaSync = Date.now();
+  } catch { enLinea = false; }
+  pintar();
+}
+function escuchar() {
+  try {
+    const es = new EventSource(NTFY + ZD.canal + "/sse");
+    es.onmessage = async (m) => {
+      try { const d = JSON.parse(m.data); if (d.event === "message" && await sumar([d])) pintar(); } catch {}
+    };
+  } catch {}
+}
+
+// ---------- registrar un ingreso (por QR o manual): el pase entra completo
+async function registrar(r, modo) {
+  const e = { t: "in", r, h: Date.now(), m: modo };
+  e.s = await firmar(e);
+  e.id = "local-" + e.h + "-" + r; validos[e.id] = true;
+  pendientes.push(e); guardado.poner("zd-pendientes", pendientes);
+  pintar(); sincronizar();
+}
+
+// ---------- pantalla
+function pintar() {
+  const { ing, pase } = estado();
+  const personasIn = lista.reduce((s, p) => s + (ing[p.r] ? p.p : 0), 0);
+  $("n-in").textContent = personasIn; $("t-personas").textContent = ZD.personas;
+  $("s-pases").textContent = `${Object.keys(ing).length} de ${lista.length} pases`;
+  $("n-pase").textContent = Object.keys(pase).length; $("t-pases").textContent = lista.length;
+  $("barra").style.transform = `scaleX(${personasIn / ZD.personas})`;
+  $("red").classList.toggle("mal", !enLinea);
+  $("red-txt").textContent = enLinea
+    ? (pendientes.length ? `En línea · enviando ${pendientes.length}` : "En línea · actualizado " + hora(ultimaSync))
+    : `Sin conexión${pendientes.length ? " · " + pendientes.length + " por enviar" : ""} · se guarda en este teléfono`;
+  const q = sinTilde($("buscar").value.trim()), g = $("grupo").value;
+  const filas = lista.filter((p) => {
+    if (g && p.g !== g) return false;
+    if (filtro === "in" && !ing[p.r]) return false;
+    if (filtro === "faltan" && ing[p.r]) return false;
+    return !q || sinTilde([p.n, ...(p.a || []), p.c, p.d].join(" ")).includes(q);
+  });
+  const items = []; let grupoAnt = null;
+  for (const p of filas) {
+    if (p.g !== grupoAnt) { grupoAnt = p.g; const t = document.createElement("li"); t.className = "grupo-tit"; t.textContent = p.g; items.push(t); }
+    const li = document.createElement("li");
+    const fila = document.createElement("div"); fila.className = "fila";
+    const txt = document.createElement("div");
+    const nom = document.createElement("div"); nom.className = "nom"; nom.textContent = p.n;
+    if (p.p > 1) { const s = document.createElement("small"); s.textContent = "× " + p.p; nom.append(s); }
+    const car = document.createElement("div"); car.className = "car";
+    car.textContent = [p.c, p.d, p.a && p.a.length ? "Con: " + p.a.join(", ") : ""].filter(Boolean).join(" · ");
+    txt.append(nom, car);
+    const chip = document.createElement("span");
+    if (ing[p.r]) { chip.className = "chip in"; chip.textContent = "Ingresó " + hora(ing[p.r].h); }
+    else if (pase[p.r]) { chip.className = "chip pase"; chip.textContent = "Con pase"; }
+    else { chip.className = "chip no"; chip.textContent = "Sin abrir"; }
+    fila.append(txt, chip); li.append(fila);
+    if (abierto === p.r && !ing[p.r]) {
+      const acc = document.createElement("div"); acc.className = "acciones";
+      const b = document.createElement("button"); b.type = "button"; b.className = "sec"; b.textContent = `Marcar ingreso manual (${quienes(p)})`;
+      let conf = 0;
+      b.onclick = (ev) => {
+        ev.stopPropagation();
+        if (Date.now() - conf > 4000) { conf = Date.now(); b.textContent = "Tocar otra vez para confirmar"; return; }
+        abierto = null; registrar(p.r, "Manual");
+        aviso("ok", "Ingreso manual", p.n, p.c || p.g, p);
+      };
+      acc.append(b); li.append(acc);
+    }
+    fila.onclick = () => { abierto = abierto === p.r ? null : p.r; pintar(); };
+    items.push(li);
+  }
+  $("lista").replaceChildren(...items);
+}
+
+function aviso(tipo, est, quien, detalle, p) {
+  $("resultado").className = "resultado r-" + tipo;
+  $("r-estado").textContent = est; $("r-quien").textContent = quien; $("r-detalle").textContent = detalle;
+  const rp = $("r-personas");
+  if (p) { rp.classList.remove("oculto"); rp.textContent = (p.p > 1 ? `Entran ${p.p} personas` : "Entra 1 persona") + (p.a && p.a.length ? " · con " + p.a.join(", ") : ""); }
+  else rp.classList.add("oculto");
+  if (navigator.vibrate) navigator.vibrate(tipo === "ok" ? 120 : [80, 60, 80, 60, 80]);
+}
+
+async function validar(texto) {
+  const codigo = (texto || "").trim().toUpperCase();
+  if (!codigo || ocupado) return;
+  const ahora = Date.now();
+  if (codigo === ultimo && ahora - ultimoT < 4000) return;   // el mismo QR sigue frente a la cámara
+  ultimo = codigo; ultimoT = ahora; ocupado = true;
+  try {
+    const f = await fichaPorCodigo(codigo);
+    if (!f) { aviso("error", "Código no válido", "No pertenece a la lista", codigo); return; }
+    const { ing } = estado();
+    if (ing[f.r]) aviso("repetido", "Ya ingresó", f.n, "Registrado a las " + hora(ing[f.r].h));
+    else { await registrar(f.r, "QR"); aviso("ok", "Válido · Adelante", f.n, [f.c, f.g].filter(Boolean).join(" · "), f); }
+  } catch { aviso("error", "Código no válido", "No pertenece a la lista", codigo); }
+  finally { ocupado = false; }
+}
+
+// ---------- cámara
+async function leerCuadro() {
+  if (!flujo) return;
+  const v = $("video");
+  if (v.readyState >= 2) {
+    try {
+      if (detector) {
+        const r = await detector.detect(v);
+        if (r.length) await validar(r[0].rawValue);
+      } else {
+        const c = leerCuadro.c || (leerCuadro.c = document.createElement("canvas"));
+        const m = Math.min(v.videoWidth, v.videoHeight), lado = Math.min(m, 720);
+        c.width = c.height = lado;
+        const x = c.getContext("2d", { willReadFrequently: true });
+        x.drawImage(v, (v.videoWidth - m) / 2, (v.videoHeight - m) / 2, m, m, 0, 0, lado, lado);
+        const q = jsQR(x.getImageData(0, 0, lado, lado).data, lado, lado, { inversionAttempts: "dontInvert" });
+        if (q) await validar(q.data);
+      }
+    } catch {}
+  }
+  requestAnimationFrame(leerCuadro);
+}
+$("camara").addEventListener("click", async () => {
+  if (flujo) {
+    flujo.getTracks().forEach((t) => t.stop()); flujo = null;
+    $("video-caja").classList.add("oculto"); $("camara").textContent = "Escanear"; return;
+  }
+  try {
+    flujo = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+    if ("BarcodeDetector" in window) {
+      try { if ((await BarcodeDetector.getSupportedFormats()).includes("qr_code")) detector = new BarcodeDetector({ formats: ["qr_code"] }); } catch {}
+    }
+    const v = $("video"); v.srcObject = flujo; await v.play();
+    $("video-caja").classList.remove("oculto"); $("camara").textContent = "Detener cámara";
+    leerCuadro();
+  } catch { aviso("error", "Sin cámara", "Permita el acceso a la cámara", "o escriba el código abajo"); }
+});
+$("validar").addEventListener("click", () => { ultimo = ""; validar($("manual").value); $("manual").value = ""; });
+$("manual").addEventListener("keydown", (e) => { if (e.key === "Enter") $("validar").click(); });
+$("buscar").addEventListener("input", pintar);
+$("grupo").addEventListener("change", pintar);
+document.querySelectorAll(".filtros button").forEach((b) => b.addEventListener("click", () => {
+  filtro = b.dataset.f; document.querySelectorAll(".filtros button").forEach((x) => x.classList.toggle("si", x === b)); pintar();
+}));
+
+// ---------- Excel con el estado de todos los pases
+$("excel").addEventListener("click", async () => {
+  await sincronizar();
+  const { ing, pase } = estado();
+  const filas = lista.map((p) => ({
+    "No.": p.no, "Anfitrión / grupo": p.g, "Nombre": p.n, "Cargo": p.c, "Nota": p.d,
+    "Acompañantes": (p.a || []).join(", "), "Personas": p.p,
+    "Pase abierto": pase[p.r] ? "Sí" : "No",
+    "Hora de ingreso": ing[p.r] ? hora(ing[p.r].h) : "",
+    "Registro": ing[p.r] ? ing[p.r].m : "",
+    "Estado": ing[p.r] ? "Ingresó" : "Pendiente",
+  }));
+  const hoja = XLSX.utils.json_to_sheet(filas);
+  hoja["!cols"] = [5, 30, 32, 34, 30, 30, 9, 12, 15, 10, 11].map((w) => ({ wch: w }));
+  const per = lista.reduce((s, p) => s + (ing[p.r] ? p.p : 0), 0);
+  XLSX.utils.sheet_add_aoa(hoja, [[], ["", `Ingresaron ${per} de ${ZD.personas} personas (${Object.keys(ing).length} de ${lista.length} pases) · corte ${hora(Date.now())}`]], { origin: -1 });
+  const libro = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(libro, hoja, "Control Zorzal Dorado");
+  XLSX.writeFile(libro, `Control Zorzal Dorado ${new Date().toTimeString().slice(0, 5).replace(":", "h")}.xlsx`);
+});
+
+// ---------- arranque
+(async function () {
+  const h = location.hash.slice(1);
+  if (h) { guardado.poner("zd-control", h); history.replaceState(null, "", location.pathname); }
+  const k = h || guardado.leer("zd-control");
+  try {
+    const bytes = deB64url(k);
+    lista = await abrir(bytes, ZD.lista);
+    firma = await crypto.subtle.importKey("raw", bytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  } catch { $("sin-clave").classList.remove("oculto"); return; }
+  for (const p of lista) porRef[p.r] = p;
+  for (const g of [...new Set(lista.map((p) => p.g))]) { const o = document.createElement("option"); o.value = o.textContent = g; $("grupo").append(o); }
+  $("app").classList.remove("oculto");
+  await comprobar(); pintar();
+  await sincronizar(); escuchar();
+  setInterval(sincronizar, 15000);
+})();
+</script>
+</body>
+</html>
