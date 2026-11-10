@@ -170,7 +170,7 @@ button { font-family: inherit; }
          -webkit-backdrop-filter: var(--desenfoque); backdrop-filter: var(--desenfoque); }
 .panel { margin-top: 40px; }
 .datos { display: grid; grid-template-columns: repeat(3, 1fr); }
-.dato { display: flex; flex-direction: column; justify-content: center; padding: 18px 8px; text-align: center; }
+.dato { display: flex; flex-direction: column; justify-content: flex-start; padding: 18px 8px; text-align: center; }
 .dato + .dato { border-left: 1px solid var(--linea-fina); }
 .dato .k { font-size: 9.5px; font-weight: 500; letter-spacing: .26em; color: var(--oro-3); text-indent: .26em; }
 .dato .v { margin-top: 6px; font-size: 15px; font-weight: 400; line-height: 1.25; color: var(--marfil); }
@@ -346,7 +346,7 @@ a.boton { text-decoration: none; }
   .polvo, .haz { display: none; }
 }
 @media (max-width: 360px) {
-  .datos { grid-template-columns: 1fr 1fr; } .datos .dato:first-child { grid-column: span 2; }
+  .dato { padding: 16px 4px; } .dato .v { font-size: 13.5px; }
   .reloj .num { font-size: 29px; }
 }
 </style>
@@ -423,7 +423,7 @@ a.boton { text-decoration: none; }
       <div class="datos">
         <div class="dato"><div class="k">FECHA</div><div class="v">Viernes 13<br>de noviembre</div></div>
         <div class="dato"><div class="k">LUGAR</div><div class="v">Plaza de<br>las Banderas</div></div>
-        <div class="dato"><div class="k">HORA</div><div class="v">7:00<br>p.m.</div></div>
+        <div class="dato"><div class="k">HORA</div><div class="v" style="white-space:nowrap">7:00 p.m.</div></div>
       </div>
       <div class="cuenta" id="cuenta">
         <div class="k">FALTAN</div>
@@ -482,7 +482,7 @@ a.boton { text-decoration: none; }
           <div class="p-talon">
             <div><div class="k">FECHA</div><div class="v">Vie 13 nov</div></div>
             <div><div class="k">LUGAR</div><div class="v">Plaza de las Banderas</div></div>
-            <div><div class="k">HORA</div><div class="v">7:00 p.m.</div></div>
+            <div><div class="k">HORA</div><div class="v" style="white-space:nowrap">7:00 p.m.</div></div>
           </div>
           <div class="p-codigo" id="p-codigo"></div>
           <div class="p-pie">Presente este código al ingresar · Una sola entrada</div>
