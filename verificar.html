@@ -32,8 +32,8 @@ header .t1 { font-size: 10px; font-weight: 500; letter-spacing: .38em; color: va
 header .t2 { font-size: 22px; font-weight: 700; text-transform: uppercase; line-height: 1.05; margin-top: 2px;
              background: linear-gradient(180deg, var(--oro-1), var(--oro-3)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 header .t3 { font-size: 12px; color: var(--suave); margin-top: 2px; }
-.tarjeta { margin-top: 14px; padding: 16px; border-radius: 22px; background: linear-gradient(160deg, rgba(255,255,255,.09), rgba(255,255,255,.025));
-           border: 1px solid var(--linea); }
+.tarjeta { margin-top: 14px; padding: 16px; border-radius: 20px; background: rgba(255,255,255,.065); border: 1px solid rgba(255,255,255,.13);
+           box-shadow: inset 0 1px 0 rgba(255,255,255,.2); -webkit-backdrop-filter: blur(28px) saturate(175%); backdrop-filter: blur(28px) saturate(175%); }
 .cifras { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .cifra { text-align: center; padding: 10px 4px; border-radius: 16px; background: rgba(0,0,0,.2); }
 .cifra b { font-size: 42px; font-weight: 600; line-height: 1; color: var(--oro-1); font-variant-numeric: tabular-nums; }
@@ -46,7 +46,7 @@ header .t3 { font-size: 12px; color: var(--suave); margin-top: 2px; }
 .estado-red { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--suave); }
 .estado-red i { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); }
 .estado-red.mal i { background: var(--error); box-shadow: 0 0 8px var(--error); }
-button { display: block; width: 100%; margin-top: 12px; padding: 15px; border: 0; border-radius: 16px; cursor: pointer;
+button { display: block; width: 100%; margin-top: 12px; padding: 15px; border: 0; border-radius: 14px; cursor: pointer;
          font-size: 14px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #2b1c05;
          background: linear-gradient(180deg, var(--oro-1), var(--oro-2) 45%, var(--oro-3)); }
 button:active { transform: scale(.98); }
@@ -58,7 +58,7 @@ button.sec { color: var(--oro-1); background: rgba(255,255,255,.06); border: 1px
 .resultado .estado { font-size: 12px; letter-spacing: .3em; font-weight: 600; text-transform: uppercase; }
 .resultado .quien { font-size: 24px; font-weight: 600; margin-top: 6px; line-height: 1.15; }
 .resultado .detalle { font-size: 15px; margin-top: 4px; opacity: .92; }
-.resultado .personas { display: inline-block; margin-top: 10px; padding: 6px 14px; border-radius: 99px; background: rgba(0,0,0,.22); font-size: 18px; font-weight: 600; }
+.resultado .personas { display: inline-block; margin-top: 10px; padding: 6px 12px; border-radius: 8px; background: rgba(0,0,0,.22); font-size: 18px; font-weight: 600; }
 .r-ok { background: var(--ok); } .r-repetido { background: var(--alerta); } .r-error { background: var(--error); }
 .fila-manual { display: flex; gap: 8px; margin-top: 12px; }
 .fila-manual button { width: auto; margin: 0; padding: 0 18px; }
@@ -78,7 +78,7 @@ ul.lista li { padding: 11px 2px; border-bottom: 1px solid var(--linea); }
 .fila .nom { font-size: 16px; font-weight: 500; line-height: 1.2; }
 .fila .nom small { font-size: 12px; font-weight: 600; color: var(--oro-2); margin-left: 6px; }
 .fila .car { font-size: 12.5px; color: var(--suave); margin-top: 2px; line-height: 1.3; }
-.chip { flex: none; font-size: 11.5px; font-weight: 600; padding: 5px 9px; border-radius: 99px; white-space: nowrap; }
+.chip { flex: none; font-size: 11.5px; font-weight: 600; padding: 5px 8px; border-radius: 6px; white-space: nowrap; }
 .chip.in { background: rgba(31,157,90,.2); color: #6fe0a2; }
 .chip.pase { background: rgba(201,138,18,.18); color: #f3c66a; }
 .chip.no { background: rgba(255,255,255,.07); color: var(--suave); }
