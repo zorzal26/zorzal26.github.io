@@ -149,9 +149,16 @@ button { font-family: inherit; }
 .edicion::after { transform: scaleX(-1); }
 .marca { position: relative; display: inline-block; margin-top: 8px; font-weight: 700; text-transform: uppercase;
          font-size: clamp(40px, 13.4vw, 60px); line-height: .95; letter-spacing: -.01em;
-         background: linear-gradient(180deg, var(--oro-1) 0%, var(--oro-2) 35%, var(--oro-3) 62%, var(--oro-4) 100%);
+         background: var(--luz-cursor), linear-gradient(180deg, #f6dfa0 0%, var(--oro-3) 55%, var(--oro-4) 100%);
          -webkit-background-clip: text; background-clip: text; color: transparent;
          filter: drop-shadow(0 6px 18px rgba(0,0,0,.35)); }
+/* brillo que sigue al cursor (o al dedo) sobre el nombre del evento */
+.titulo { --mx: 50%; --my: 50%; --a: 0; }
+.titulo .brilla { --luz-cursor: radial-gradient(circle 95px at var(--mx) var(--my), rgba(255,255,255,var(--a)), rgba(255,246,214,calc(var(--a) * .6)) 40%, transparent 78%); }
+.edicion.brilla, .anio.brilla { background: var(--luz-cursor), linear-gradient(var(--oro-2), var(--oro-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.anio.brilla { background: var(--luz-cursor), linear-gradient(var(--texto-suave), var(--texto-suave)); -webkit-background-clip: text; background-clip: text; }
+@property --a { syntax: "<number>"; inherits: true; initial-value: 0; }
+.titulo { transition: --a .45s ease; }
 .marca span { display: block; }
 .marca span + span { font-weight: 200; letter-spacing: .18em; font-size: .62em; margin-top: .12em; text-indent: .18em; }
 @keyframes barre { 0% { transform: translateX(-100%); } 40%, 100% { transform: translateX(100%); } }
@@ -407,9 +414,9 @@ a.boton { text-decoration: none; }
     </div>
 
     <div class="titulo">
-      <div class="edicion aparece" style="--i:3">TERCERA EDICIÓN</div><br>
-      <h1 class="marca aparece" style="--i:4"><span>Zorzal</span><span>Dorado</span></h1>
-      <div class="anio aparece" style="--i:5">2026</div>
+      <div class="edicion brilla aparece" style="--i:3">TERCERA EDICIÓN</div><br>
+      <h1 class="marca brilla aparece" style="--i:4"><span>Zorzal</span><span>Dorado</span></h1>
+      <div class="anio brilla aparece" style="--i:5">2026</div>
     </div>
 
     <div class="panel aparece" style="--i:6">
@@ -563,6 +570,22 @@ function inclinar(zona, objetivo, fuerza, alMover) {
   zona.addEventListener("pointerleave", () => { objetivo.style.transform = ""; alMover?.(0, 0); });
 }
 inclinar($("escena"), $("trofeo-caja"), 10);
+// el nombre del evento brilla donde pasa el cursor: cada línea recibe la posición en sus propias coordenadas
+(function () {
+  const t = document.querySelector(".titulo"), lineas = [...t.querySelectorAll(".brilla")];
+  let raf = 0;
+  const mover = (x, y) => {
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => {
+      t.style.setProperty("--a", 1);
+      for (const el of lineas) { const r = el.getBoundingClientRect(); el.style.setProperty("--mx", x - r.left + "px"); el.style.setProperty("--my", y - r.top + "px"); }
+    });
+  };
+  t.addEventListener("pointermove", (e) => mover(e.clientX, e.clientY));
+  t.addEventListener("pointerdown", (e) => mover(e.clientX, e.clientY));
+  t.addEventListener("pointerleave", () => t.style.setProperty("--a", 0));
+  t.addEventListener("pointerup", (e) => { if (e.pointerType !== "mouse") t.style.setProperty("--a", 0); });
+})();
 // toque al trofeo: brillo, pequeño impulso y destellos
 $("trofeo-caja").addEventListener("click", () => {
   const t = $("trofeo-caja"); if (quieto || t.classList.contains("toque")) return;
