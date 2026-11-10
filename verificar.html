@@ -147,13 +147,13 @@ button:disabled { opacity: .4; }
   <section class="tarjeta">
     <div class="cifras">
       <div class="cifra" id="c-dentro"><b id="n-dentro">0</b><span> / <span id="t-cap"></span></span><div class="e">EN MESA</div><div class="s">personas dentro</div></div>
-      <div class="cifra"><b id="n-in">0</b><span> / <span id="t-personas"></span></span><div class="e">INVITADOS</div><div class="s" id="s-pases"></div></div>
-      <div class="cifra"><b id="n-ex">0</b><span> / <span id="t-cupo"></span></span><div class="e">EXTRAS</div><div class="s">cupo de extras</div></div>
+      <div class="cifra"><b id="n-in">0</b><span> / <span id="t-personas"></span></span><div class="e">INVITADOS</div><div class="s">del listado</div></div>
+      <div class="cifra"><b id="n-ex">0</b><span> / <span id="t-cupo"></span></span><div class="e">EXTRAS</div><div class="s" id="s-extras">cupo de extras</div></div>
     </div>
     <div class="barra"><i id="barra"></i><i id="barra-ex" class="ex"></i></div>
     <div class="libres" id="libres"></div>
     <div class="recepcion">
-      <div class="k">RECEPCIÓN ESPERADA · PASES GENERADOS</div>
+      <div class="k">RECEPCIÓN ESPERADA</div>
       <div class="v" id="rec-v"></div>
       <div class="barra2"><i id="rec-barra"></i></div>
       <div class="ult" id="rec-ult"></div>
@@ -172,7 +172,7 @@ button:disabled { opacity: .4; }
       <input id="manual" class="texto" placeholder="Código escrito (ZD26-…)" autocomplete="off" autocapitalize="characters">
       <button id="validar" type="button" class="sec">Validar</button>
     </div>
-    <button id="sin-pase" type="button" class="sec sinpase">Ingreso sin pase (autorizado)</button>
+    <button id="sin-pase" type="button" class="sec sinpase">Llegó alguien sin invitación</button>
   </section>
 
   <section class="tarjeta">
@@ -342,10 +342,10 @@ function evaluarExtras(r, k) {
   const cupoLibre = CUPO - st.extras;
   if (k > libres) return { bloqueo: true, txt: libres <= 0 ? "Capacidad completa: no quedan lugares en mesa." : `Solo quedan ${libres} lugares en mesa.` };
   const motivos = [];
-  if (r === SIN) motivos.push("ingreso sin pase");
-  else if (yaTiene + k > MAXEX) motivos.push(`supera ${MAXEX} extras por pase (ya registró ${yaTiene})`);
+  if (r === SIN) motivos.push("no viene con un invitado");
+  else if (yaTiene + k > MAXEX) motivos.push(`son más de ${MAXEX} con la misma persona`);
   if (k > cupoLibre) motivos.push(cupoLibre <= 0 ? "se acabó el cupo de extras; ocupa lugares de invitados que no han llegado" : `solo quedan ${cupoLibre} lugares de cupo de extras`);
-  return { bloqueo: false, autoriza: motivos.length > 0, txt: motivos.length ? "Requiere autorización: " + motivos.join(" y ") + "." : `Dentro de la regla (hasta ${MAXEX} por pase).` };
+  return { bloqueo: false, autoriza: motivos.length > 0, txt: motivos.length ? "Requiere autorización: " + motivos.join(" y ") + "." : `Dentro de la regla: hasta ${MAXEX} por invitado.` };
 }
 function abrirExtras(r) {
   formExtra = { r, k: 1 };
@@ -360,31 +360,29 @@ function pintarExtras() {
   caja.classList.remove("oculto");
   const previos = r === SIN ? [] : (st.ex[r] || []);
   caja.innerHTML = `
-    <div class="tit">${r === SIN ? "INGRESO SIN PASE" : "EXTRAS DE ESTE PASE"}</div>
+    <div class="tit">${r === SIN ? "LLEGÓ SIN INVITACIÓN" : "¿CON CUÁNTAS PERSONAS MÁS VINO?"}</div>
     <div class="reg"></div>
     <div class="paso"><button type="button" class="sec" data-d="-1">−</button><b>${formExtra.k}</b><button type="button" class="sec" data-d="1">+</button></div>
-    <input class="texto" id="ex-nombres" placeholder="${r === SIN ? "Nombre de la(s) persona(s) — obligatorio" : "Nombre de los extras (opcional)"}" autocomplete="off">
     <input class="texto${ev.autoriza || r === SIN ? "" : " oculto"}" id="ex-autoriza" placeholder="¿Quién autoriza? (supervisor de protocolo)" autocomplete="off">
     <div class="nota${ev.bloqueo ? " mal" : ""}"></div>
-    <div class="botones"><button type="button" class="sec" id="ex-cerrar">Cancelar</button><button type="button" id="ex-ok"${ev.bloqueo ? " disabled" : ""}>Registrar ${quienes(formExtra.k)}</button></div>`;
-  caja.querySelector(".reg").textContent = r === SIN ? "Persona que no está en el listado. Solo con autorización del supervisor."
-    : `${p.n} · pase para ${quienes(p.p)}` + (previos.length ? ` · ya registró ${st.extrasDe(r)} extra(s)` : "");
+    <div class="botones"><button type="button" class="sec" id="ex-cerrar">Cancelar</button><button type="button" id="ex-ok"${ev.bloqueo ? " disabled" : ""}>Registrar +${formExtra.k}</button></div>`;
+  caja.querySelector(".reg").textContent = r === SIN ? "Personas que no están en el listado y no vienen con un invitado."
+    : `${p.n}` + (previos.length ? ` · ya entró con ${st.extrasDe(r)} más` : "");
   caja.querySelector(".nota").textContent = ev.txt;
-  const nom = $("ex-nombres"), aut = $("ex-autoriza");
-  nom.value = formExtra.nombres || ""; aut.value = formExtra.autoriza || "";
-  nom.oninput = () => (formExtra.nombres = nom.value); aut.oninput = () => (formExtra.autoriza = aut.value);
+  const aut = $("ex-autoriza");
+  aut.value = formExtra.autoriza || "";
+  aut.oninput = () => (formExtra.autoriza = aut.value);
   caja.querySelectorAll(".paso button").forEach((b) => (b.onclick = () => { formExtra.k = Math.max(1, Math.min(20, formExtra.k + +b.dataset.d)); pintarExtras(); }));
   $("ex-cerrar").onclick = () => { formExtra = null; pintarExtras(); };
   $("ex-ok").onclick = async () => {
     const e2 = evaluarExtras(r, formExtra.k);
     if (e2.bloqueo) return;
-    const nombres = nom.value.trim(), autoriza = aut.value.trim();
-    if (r === SIN && !nombres) { nom.focus(); nom.placeholder = "Escriba el nombre"; return; }
+    const nombres = "", autoriza = aut.value.trim();
     if ((e2.autoriza || r === SIN) && !autoriza) { aut.classList.remove("oculto"); aut.focus(); aut.placeholder = "Falta quién autoriza"; return; }
     const k = formExtra.k; formExtra = null; pintarExtras();
     await registrarExtras(r, k, nombres, (e2.autoriza || r === SIN) ? autoriza : "");
-    aviso("ok", r === SIN ? "Ingreso autorizado" : "Extras registrados", r === SIN ? nombres : porRef[r].n,
-          `${quienes(k)} extra${k > 1 ? "s" : ""}` + (autoriza && (e2.autoriza || r === SIN) ? ` · autorizó ${autoriza}` : ""));
+    aviso("ok", r === SIN ? "Ingreso sin invitación" : "Registrado", r === SIN ? `${quienes(k)} sin invitación` : `${porRef[r].n} vino con ${k} más`,
+          (autoriza && (e2.autoriza || r === SIN) ? "" : "Dentro de la regla") + (autoriza && (e2.autoriza || r === SIN) ? `Autorizó ${autoriza}` : ""));
   };
 }
 $("sin-pase").addEventListener("click", () => abrirExtras(SIN));
@@ -396,7 +394,8 @@ function pintar() {
   $("n-dentro").textContent = st.dentro; $("t-cap").textContent = CAP;
   $("c-dentro").classList.toggle("lleno", libres <= 0);
   $("n-in").textContent = st.invitadosDentro; $("t-personas").textContent = ZD.personas;
-  $("s-pases").textContent = `${Object.keys(ing).length} de ${lista.length} pases`;
+  const sinAviso = (ex[SIN] || []).reduce((s, e) => s + e.k, 0);
+  $("s-extras").textContent = `${st.extras - sinAviso} con invitado · ${sinAviso} sin aviso`;
   $("n-ex").textContent = st.extras; $("t-cupo").textContent = CUPO;
   $("barra").style.transform = `scaleX(${Math.min(1, st.invitadosDentro / CAP)})`;
   const bx = $("barra-ex"); bx.style.transform = `scaleX(${Math.min(1, st.extras / CAP)})`; bx.style.left = Math.min(100, st.invitadosDentro / CAP * 100) + "%";
@@ -409,12 +408,12 @@ function pintar() {
     : `Sin conexión${pendientes.length ? " · " + pendientes.length + " por enviar" : ""} · se guarda en este teléfono`;
   const conPase = lista.filter((p) => pase[p.r]);
   const persConPase = conPase.reduce((s, p) => s + p.p, 0);
-  $("rec-v").innerHTML = `<b>${conPase.length}</b> de ${lista.length} pases generados · <b>${persConPase}</b> de ${ZD.personas} personas confirmadas`;
-  $("rec-barra").style.transform = `scaleX(${conPase.length / lista.length})`;
+  $("rec-v").innerHTML = `<b>${persConPase}</b> de ${ZD.personas} invitados ya tienen su pase`;
+  $("rec-barra").style.transform = `scaleX(${persConPase / ZD.personas})`;
   const ultimos = conPase.filter((p) => !ing[p.r]).sort((a, b) => pase[b.r] - pase[a.r]).slice(0, 3);
   $("rec-ult").textContent = ultimos.length ? "Últimos: " + ultimos.map((p) => `${p.n} (${hora(pase[p.r])})`).join(" · ") : "";
   const conAcomp = lista.filter((p) => p.p > 1).length;
-  $("total-lista").innerHTML = `<b>${ZD.personas}</b> invitados en total · ${lista.length} pases · ${conAcomp} vienen con acompañantes`;
+  $("total-lista").innerHTML = `<b>${ZD.personas}</b> invitados en total · ${conAcomp} vienen con acompañantes`;
   const q = sinTilde($("buscar").value.trim());
   const filas = lista.filter((p) => {
     if (filtro === "in" && !ing[p.r]) return false;
@@ -428,11 +427,10 @@ function pintar() {
   const items = [];
   const sinPase = ex[SIN] || [];
   if (sinPase.length && (filtro === "todos" || filtro === "ex" || filtro === "in")) {
-    const t = document.createElement("li"); t.className = "grupo-tit"; t.textContent = "Ingresos sin pase (autorizados)"; items.push(t);
+    const t = document.createElement("li"); t.className = "grupo-tit"; t.textContent = "Llegaron sin invitación"; items.push(t);
     for (const e of sinPase) {
-      if (q && !sinTilde(e.nombres).includes(q)) continue;
       const li = document.createElement("li"); li.innerHTML = `<div class="fila"><div><div class="nom"></div><div class="car"></div></div><span class="chip in"></span></div>`;
-      li.querySelector(".nom").textContent = e.nombres || "Sin nombre"; if (e.k > 1) li.querySelector(".nom").insertAdjacentHTML("beforeend", `<small>× ${e.k}</small>`);
+      li.querySelector(".nom").textContent = quienes(e.k);
       li.querySelector(".car").textContent = "Autorizó: " + (e.autoriza || "—"); li.querySelector(".chip").textContent = "Ingresó " + hora(e.h);
       items.push(li);
     }
@@ -457,8 +455,7 @@ function pintar() {
     const nex = st.extrasDe(p.r);
     if (nex) {
       const s = document.createElement("span"); s.className = "ex";
-      const nombres = ex[p.r].map((e) => e.nombres).filter(Boolean).join(", ");
-      s.textContent = `${car.textContent ? " · " : ""}+${nex} extra${nex > 1 ? "s" : ""}${nombres ? ": " + nombres : ""}`; car.append(s);
+      s.textContent = `${car.textContent ? " · " : ""}vino con ${nex} más`; car.append(s);
     }
     if (car.textContent) txt.append(car);
     const chip = document.createElement("span");
@@ -480,7 +477,7 @@ function pintar() {
         };
         acc.append(b);
       } else {
-        const b = document.createElement("button"); b.type = "button"; b.className = "sec"; b.textContent = "Agregar extras a este pase";
+        const b = document.createElement("button"); b.type = "button"; b.className = "sec"; b.textContent = "Vino con alguien más";
         b.onclick = (ev) => { ev.stopPropagation(); abierto = null; abrirExtras(p.r); pintar(); };
         acc.append(b);
       }
@@ -523,7 +520,7 @@ async function validar(texto) {
 function abrirExtrasSugerido(r) {   // botón discreto bajo el resultado
   const caja = $("extras"); formExtra = null;
   caja.classList.remove("oculto");
-  caja.innerHTML = `<div class="tit">¿VIENEN MÁS PERSONAS DE LAS DEL PASE?</div><div class="reg">Regístrelas como extras: hasta ${MAXEX} por pase sin autorización.</div><button type="button" class="sec" id="ex-abrir" style="margin-top:10px">Registrar extras</button>`;
+  caja.innerHTML = `<div class="tit">¿VINO CON ALGUIEN MÁS?</div><div class="reg">Solo marque cuántos. Hasta ${MAXEX} sin autorización.</div><button type="button" class="sec" id="ex-abrir" style="margin-top:10px">Sí, registrar cuántos</button>`;
   $("ex-abrir").onclick = () => abrirExtras(r);
 }
 
@@ -583,20 +580,19 @@ $("excel").addEventListener("click", async () => {
     "Hora de ingreso": ing[p.r] ? hora(ing[p.r].h) : "",
     "Registro": ing[p.r] ? ing[p.r].m : "",
     "Extras": st.extrasDe(p.r) || "",
-    "Nombres de extras": (ex[p.r] || []).map((e) => e.nombres).filter(Boolean).join(", "),
     "Autorizó extras": [...new Set((ex[p.r] || []).map((e) => e.autoriza).filter(Boolean))].join(", "),
     "Estado": ing[p.r] ? "Ingresó" : "Pendiente",
   }));
   const hoja = XLSX.utils.json_to_sheet(filas);
-  hoja["!cols"] = [5, 30, 32, 34, 26, 30, 9, 11, 16, 14, 10, 8, 30, 22, 11].map((w) => ({ wch: w }));
-  XLSX.utils.sheet_add_aoa(hoja, [[], ["", `En mesa: ${st.dentro} de ${CAP} lugares · invitados ${st.invitadosDentro} de ${ZD.personas} (${Object.keys(ing).length} de ${lista.length} pases) · extras ${st.extras} de ${CUPO} · corte ${hora(Date.now())}`]], { origin: -1 });
+  hoja["!cols"] = [5, 30, 32, 34, 26, 30, 9, 11, 16, 14, 10, 8, 22, 11].map((w) => ({ wch: w }));
+  XLSX.utils.sheet_add_aoa(hoja, [[], ["", `En mesa: ${st.dentro} de ${CAP} lugares · invitados ${st.invitadosDentro} de ${ZD.personas} · extras ${st.extras} de ${CUPO} · corte ${hora(Date.now())}`]], { origin: -1 });
   const filasEx = [];
   for (const [r, evs] of Object.entries(ex)) for (const e of evs)
-    filasEx.push({ "Hora": hora(e.h), "Pase": r === SIN ? "Sin pase" : porRef[r].n, "Anfitrión / grupo": r === SIN ? "" : porRef[r].g,
-                   "Cantidad": e.k, "Nombres": e.nombres || "", "Autorizó": e.autoriza || "", "Tipo": r === SIN ? "Sin pase autorizado" : (e.autoriza ? "Con autorización" : "Dentro de la regla") });
+    filasEx.push({ "Hora": hora(e.h), "Vino con": r === SIN ? "Sin invitación" : porRef[r].n, "Anfitrión / grupo": r === SIN ? "" : porRef[r].g,
+                   "Cantidad": e.k, "Autorizó": e.autoriza || "", "Tipo": r === SIN ? "Sin invitación" : (e.autoriza ? "Con autorización" : "Dentro de la regla") });
   filasEx.sort((a, b) => a.Hora.localeCompare(b.Hora));
-  const hojaEx = XLSX.utils.json_to_sheet(filasEx.length ? filasEx : [{ "Hora": "", "Pase": "Sin extras registrados" }]);
-  hojaEx["!cols"] = [10, 32, 30, 9, 40, 24, 20].map((w) => ({ wch: w }));
+  const hojaEx = XLSX.utils.json_to_sheet(filasEx.length ? filasEx : [{ "Hora": "", "Vino con": "Sin extras registrados" }]);
+  hojaEx["!cols"] = [10, 32, 30, 9, 24, 20].map((w) => ({ wch: w }));
   const libro = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(libro, hoja, "Control Zorzal Dorado"); XLSX.utils.book_append_sheet(libro, hojaEx, "Extras");
   XLSX.writeFile(libro, `Control Zorzal Dorado ${new Date().toTimeString().slice(0, 5).replace(":", "h")}.xlsx`);
