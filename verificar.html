@@ -84,6 +84,31 @@ ul.lista li { padding: 11px 2px; border-bottom: 1px solid var(--linea); }
 .chip.no { background: rgba(255,255,255,.07); color: var(--suave); }
 .acciones button { margin-top: 8px; padding: 11px; font-size: 13px; }
 .pie { margin-top: 24px; text-align: center; font-size: 10px; letter-spacing: .3em; color: var(--suave); }
+.cifras { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.cifra b { font-size: 34px; }
+.cifra span { font-size: 15px; }
+.cifra .e { letter-spacing: .18em; }
+.cifra.lleno b { color: #ff9a8a; }
+.libres { margin-top: 10px; text-align: center; font-size: 15px; color: var(--marfil); }
+.libres b { color: var(--oro-1); font-weight: 600; }
+.libres.alerta b { color: #ffb36b; } .libres.lleno b { color: #ff9a8a; }
+.barra { position: relative; }
+.barra i.ex { position: absolute; top: 0; left: 0; background: linear-gradient(90deg, #c98a12, #ffd27a); }
+/* extras */
+.extras { margin-top: 12px; padding: 14px; border-radius: 16px; background: rgba(0,0,0,.22); border: 1px solid rgba(255,255,255,.12); text-align: left; color: var(--marfil); }
+.extras .tit { font-size: 11px; letter-spacing: .26em; font-weight: 600; color: var(--oro-2); }
+.extras .reg { font-size: 13px; color: var(--suave); margin-top: 4px; line-height: 1.4; }
+.paso { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 12px; }
+.paso button { width: 52px; height: 52px; margin: 0; padding: 0; font-size: 26px; letter-spacing: 0; }
+.paso b { min-width: 60px; text-align: center; font-size: 34px; font-weight: 600; color: var(--oro-1); font-variant-numeric: tabular-nums; }
+.extras input.texto { margin-top: 10px; font-size: 15px; }
+.extras .nota { margin-top: 8px; font-size: 13px; line-height: 1.4; color: #ffd27a; }
+.extras .nota.mal { color: #ff9a8a; }
+.extras .botones { display: grid; grid-template-columns: 1fr 1.6fr; gap: 8px; margin-top: 12px; }
+.extras .botones button { margin: 0; padding: 13px 8px; font-size: 13px; }
+button:disabled { opacity: .4; }
+.fila .car .ex { color: #ffd27a; }
+.sinpase { margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -100,10 +125,12 @@ ul.lista li { padding: 11px 2px; border-bottom: 1px solid var(--linea); }
 <main id="app" class="oculto">
   <section class="tarjeta">
     <div class="cifras">
-      <div class="cifra"><b id="n-in">0</b><span> / <span id="t-personas"></span></span><div class="e">PERSONAS</div><div class="s" id="s-pases"></div></div>
-      <div class="cifra"><b id="n-pase">0</b><span> / <span id="t-pases"></span></span><div class="e">PASES ABIERTOS</div><div class="s">ya vieron su pase</div></div>
+      <div class="cifra" id="c-dentro"><b id="n-dentro">0</b><span> / <span id="t-cap"></span></span><div class="e">EN MESA</div><div class="s">personas dentro</div></div>
+      <div class="cifra"><b id="n-in">0</b><span> / <span id="t-personas"></span></span><div class="e">INVITADOS</div><div class="s" id="s-pases"></div></div>
+      <div class="cifra"><b id="n-ex">0</b><span> / <span id="t-cupo"></span></span><div class="e">EXTRAS</div><div class="s">cupo de extras</div></div>
     </div>
-    <div class="barra"><i id="barra"></i></div>
+    <div class="barra"><i id="barra"></i><i id="barra-ex" class="ex"></i></div>
+    <div class="libres" id="libres"></div>
     <div id="red" class="estado-red"><i></i><span id="red-txt">Conectando…</span></div>
     <button id="camara" type="button">Escanear</button>
     <div id="video-caja" class="oculto"><video id="video" playsinline muted></video></div>
@@ -113,20 +140,23 @@ ul.lista li { padding: 11px 2px; border-bottom: 1px solid var(--linea); }
       <div id="r-detalle" class="detalle"></div>
       <div id="r-personas" class="personas oculto"></div>
     </div>
+    <div id="extras" class="extras oculto"></div>
     <div class="fila-manual">
       <input id="manual" class="texto" placeholder="Código escrito (ZD26-…)" autocomplete="off" autocapitalize="characters">
       <button id="validar" type="button" class="sec">Validar</button>
     </div>
+    <button id="sin-pase" type="button" class="sec sinpase">Ingreso sin pase (autorizado)</button>
   </section>
 
   <section class="tarjeta">
     <label>LISTADO DE INVITADOS</label>
-    <input id="buscar" class="texto" placeholder="Buscar nombre o acompañante" autocomplete="off">
+    <input id="buscar" class="texto" placeholder="Buscar nombre, acompañante o extra" autocomplete="off">
     <select id="grupo"><option value="">Todos los anfitriones</option></select>
     <div class="filtros">
       <button type="button" data-f="todos" class="si">Todos</button>
       <button type="button" data-f="faltan">Faltan</button>
       <button type="button" data-f="in">Ingresaron</button>
+      <button type="button" data-f="ex">Con extras</button>
     </div>
     <ul id="lista" class="lista"></ul>
     <button id="excel" type="button">Descargar Excel</button>
@@ -143,33 +173,57 @@ ul.lista li { padding: 11px 2px; border-bottom: 1px solid var(--linea); }
 const $ = (id) => document.getElementById(id);
 const hora = (t) => new Date(t).toLocaleTimeString("es-HN", { hour: "numeric", minute: "2-digit" });
 const deB64url = (s) => deB64(s.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((s.length + 3) % 4));
-const sinTilde = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-const quienes = (p) => p.p > 1 ? `${p.p} personas` : "1 persona";
+const sinTilde = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+const quienes = (n) => n === 1 ? "1 persona" : `${n} personas`;
+const b64 = (u) => btoa(String.fromCharCode(...u));
 
-let firma = null, lista = [], porRef = {};
+// reglas del evento (vienen de generar_zorzal.mjs)
+const CAP = ZD.capacidad || 200;          // lugares en mesa
+const MAXEX = ZD.maxExtra ?? 2;            // extras por pase sin autorización
+const CUPO = Math.max(0, CAP - ZD.personas);  // lugares que sobran después de los invitados del listado
+const SIN = "sin-pase";                    // referencia de los ingresos autorizados sin pase
+
+let firma = null, claveCtl = null, lista = [], porRef = {};
 let eventos = guardado.leer("zd-eventos") || {};        // id → evento ya visto en el canal
 let pendientes = guardado.leer("zd-pendientes") || [];  // eventos propios aún sin enviar
 const validos = {};                                     // id → firma comprobada
+const detalles = {};                                    // id → { nombres, autoriza } de un extra (descifrado)
 let filtro = "todos", abierto = null, enLinea = false, ultimaSync = 0;
 let flujo = null, detector = null, ocupado = false, ultimo = "", ultimoT = 0;
+let formExtra = null;                                   // { r, k } del formulario de extras abierto
 
-// ---------- firma de los ingresos (solo el equipo tiene la clave)
+// ---------- firma y cifrado (solo el equipo tiene la clave)
 async function firmar(e) {
-  const s = new Uint8Array(await crypto.subtle.sign("HMAC", firma, enc.encode(`in|${e.r}|${e.h}|${e.m}`)));
-  return hex(s).slice(0, 32);
+  const txt = e.t === "ex" ? `ex|${e.r}|${e.h}|${e.k}|${e.x || ""}` : `in|${e.r}|${e.h}|${e.m}`;
+  return hex(new Uint8Array(await crypto.subtle.sign("HMAC", firma, enc.encode(txt)))).slice(0, 32);
+}
+async function cifrar(obj) {   // nombres y autorización viajan cifrados por el canal
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const k = await crypto.subtle.importKey("raw", claveCtl, "AES-GCM", false, ["encrypt"]);
+  const c = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, k, enc.encode(JSON.stringify(obj))));
+  return b64(iv) + "." + b64(c);
+}
+async function descifrar(id, e) {
+  if (detalles[id] || !e.x) return;
+  try { detalles[id] = await abrir(claveCtl, e.x); } catch { detalles[id] = {}; }
 }
 
 // ---------- estado derivado de los eventos
 function estado() {
-  const ing = {}, pase = {};
+  const ing = {}, pase = {}, ex = {};
   const todos = [...Object.entries(eventos), ...pendientes.map((e) => [e.id, e])];
   for (const [id, e] of todos) {
-    if (!porRef[e.r]) continue;
+    if (e.r !== SIN && !porRef[e.r]) continue;
     if (e.t === "in" && validos[id]) { if (!ing[e.r] || e.h < ing[e.r].h) ing[e.r] = e; }
+    if (e.t === "ex" && validos[id]) (ex[e.r] ||= []).push({ id, ...e, ...(detalles[id] || {}) });
     if (e.t === "pase") { const h = e.time ? e.time * 1000 : e.h; if (!pase[e.r] || h < pase[e.r]) pase[e.r] = h; }
   }
   for (const r in ing) if (!pase[r]) pase[r] = ing[r].h;
-  return { ing, pase };
+  for (const r in ex) ex[r].sort((a, b) => a.h - b.h);
+  const invitadosDentro = lista.reduce((s, p) => s + (ing[p.r] ? p.p : 0), 0);
+  const extrasDe = (r) => (ex[r] || []).reduce((s, e) => s + e.k, 0);
+  const extras = Object.keys(ex).reduce((s, r) => s + extrasDe(r), 0);
+  return { ing, pase, ex, extrasDe, invitadosDentro, extras, dentro: invitadosDentro + extras };
 }
 
 async function sumar(msjs) {
@@ -177,15 +231,17 @@ async function sumar(msjs) {
   for (const m of msjs) {
     if (eventos[m.id]) continue;
     let e; try { e = JSON.parse(m.message); } catch { continue; }
-    if (!e || !porRef[e.r] || (e.t !== "in" && e.t !== "pase")) continue;
+    if (!e || (e.r !== SIN && !porRef[e.r]) || !["in", "pase", "ex"].includes(e.t)) continue;
     e.time = m.time; eventos[m.id] = e; cambio = true;
   }
   if (cambio) { await comprobar(); guardado.poner("zd-eventos", eventos); }
   return cambio;
 }
 async function comprobar() {
-  for (const [id, e] of [...Object.entries(eventos), ...pendientes.map((p) => [p.id, p])])
-    if (e.t === "in" && validos[id] === undefined) validos[id] = e.s === await firmar(e);
+  for (const [id, e] of [...Object.entries(eventos), ...pendientes.map((p) => [p.id, p])]) {
+    if ((e.t === "in" || e.t === "ex") && validos[id] === undefined) validos[id] = e.s === await firmar(e);
+    if (e.t === "ex" && validos[id]) await descifrar(id, e);
+  }
 }
 
 // ---------- sincronización: lectura completa cada 15 s + avisos al instante
@@ -194,7 +250,7 @@ async function sincronizar() {
     for (const p of [...pendientes]) {
       const { id, ...ev } = p;
       const r = await enviar(ev);
-      eventos[r.id] = { ...ev, time: r.time }; validos[r.id] = true;
+      eventos[r.id] = { ...ev, time: r.time }; validos[r.id] = true; detalles[r.id] = detalles[id];
       pendientes = pendientes.filter((x) => x.id !== id);
     }
     guardado.poner("zd-pendientes", pendientes); guardado.poner("zd-eventos", eventos);
@@ -212,23 +268,95 @@ function escuchar() {
   } catch {}
 }
 
-// ---------- registrar un ingreso (por QR o manual): el pase entra completo
-async function registrar(r, modo) {
-  const e = { t: "in", r, h: Date.now(), m: modo };
+async function guardarEvento(e) {
   e.s = await firmar(e);
-  e.id = "local-" + e.h + "-" + r; validos[e.id] = true;
+  e.id = "local-" + e.h + "-" + e.r + "-" + e.t; validos[e.id] = true;
   pendientes.push(e); guardado.poner("zd-pendientes", pendientes);
   pintar(); sincronizar();
+  return e;
 }
+// ingreso de un pase (por QR o manual): el pase entra completo
+const registrar = (r, modo) => guardarEvento({ t: "in", r, h: Date.now(), m: modo });
+// extras: personas que no están en el listado y llegan con un pase (o sin pase, autorizadas)
+async function registrarExtras(r, k, nombres, autoriza) {
+  const e = { t: "ex", r, h: Date.now(), k, m: autoriza ? "Autorizado" : "Regla" };
+  e.x = await cifrar({ nombres, autoriza });
+  const g = await guardarEvento(e);
+  detalles[g.id] = { nombres, autoriza };
+  pintar();
+}
+
+// ---------- formulario de extras
+// reglas: hasta MAXEX extras por pase sin autorización; más que eso, o si se acabó el cupo de extras,
+// hace falta el nombre de quien autoriza (supervisor de protocolo). Nunca se pasa de CAP personas en mesa.
+function evaluarExtras(r, k) {
+  const st = estado();
+  const yaTiene = r === SIN ? 0 : st.extrasDe(r);
+  const libres = CAP - st.dentro;
+  const cupoLibre = CUPO - st.extras;
+  if (k > libres) return { bloqueo: true, txt: libres <= 0 ? "Capacidad completa: no quedan lugares en mesa." : `Solo quedan ${libres} lugares en mesa.` };
+  const motivos = [];
+  if (r === SIN) motivos.push("ingreso sin pase");
+  else if (yaTiene + k > MAXEX) motivos.push(`supera ${MAXEX} extras por pase (ya registró ${yaTiene})`);
+  if (k > cupoLibre) motivos.push(cupoLibre <= 0 ? "se acabó el cupo de extras; ocupa lugares de invitados que no han llegado" : `solo quedan ${cupoLibre} lugares de cupo de extras`);
+  return { bloqueo: false, autoriza: motivos.length > 0, txt: motivos.length ? "Requiere autorización: " + motivos.join(" y ") + "." : `Dentro de la regla (hasta ${MAXEX} por pase).` };
+}
+function abrirExtras(r) {
+  formExtra = { r, k: 1 };
+  pintarExtras();
+  $("extras").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+function pintarExtras() {
+  const caja = $("extras");
+  if (!formExtra) { caja.classList.add("oculto"); caja.replaceChildren(); return; }
+  const { r } = formExtra, st = estado(), p = porRef[r];
+  const ev = evaluarExtras(r, formExtra.k);
+  caja.classList.remove("oculto");
+  const previos = r === SIN ? [] : (st.ex[r] || []);
+  caja.innerHTML = `
+    <div class="tit">${r === SIN ? "INGRESO SIN PASE" : "EXTRAS DE ESTE PASE"}</div>
+    <div class="reg"></div>
+    <div class="paso"><button type="button" class="sec" data-d="-1">−</button><b>${formExtra.k}</b><button type="button" class="sec" data-d="1">+</button></div>
+    <input class="texto" id="ex-nombres" placeholder="${r === SIN ? "Nombre de la(s) persona(s) — obligatorio" : "Nombre de los extras (opcional)"}" autocomplete="off">
+    <input class="texto${ev.autoriza || r === SIN ? "" : " oculto"}" id="ex-autoriza" placeholder="¿Quién autoriza? (supervisor de protocolo)" autocomplete="off">
+    <div class="nota${ev.bloqueo ? " mal" : ""}"></div>
+    <div class="botones"><button type="button" class="sec" id="ex-cerrar">Cancelar</button><button type="button" id="ex-ok"${ev.bloqueo ? " disabled" : ""}>Registrar ${quienes(formExtra.k)}</button></div>`;
+  caja.querySelector(".reg").textContent = r === SIN ? "Persona que no está en el listado. Solo con autorización del supervisor."
+    : `${p.n} · pase para ${quienes(p.p)}` + (previos.length ? ` · ya registró ${st.extrasDe(r)} extra(s)` : "");
+  caja.querySelector(".nota").textContent = ev.txt;
+  const nom = $("ex-nombres"), aut = $("ex-autoriza");
+  nom.value = formExtra.nombres || ""; aut.value = formExtra.autoriza || "";
+  nom.oninput = () => (formExtra.nombres = nom.value); aut.oninput = () => (formExtra.autoriza = aut.value);
+  caja.querySelectorAll(".paso button").forEach((b) => (b.onclick = () => { formExtra.k = Math.max(1, Math.min(20, formExtra.k + +b.dataset.d)); pintarExtras(); }));
+  $("ex-cerrar").onclick = () => { formExtra = null; pintarExtras(); };
+  $("ex-ok").onclick = async () => {
+    const e2 = evaluarExtras(r, formExtra.k);
+    if (e2.bloqueo) return;
+    const nombres = nom.value.trim(), autoriza = aut.value.trim();
+    if (r === SIN && !nombres) { nom.focus(); nom.placeholder = "Escriba el nombre"; return; }
+    if ((e2.autoriza || r === SIN) && !autoriza) { aut.classList.remove("oculto"); aut.focus(); aut.placeholder = "Falta quién autoriza"; return; }
+    const k = formExtra.k; formExtra = null; pintarExtras();
+    await registrarExtras(r, k, nombres, (e2.autoriza || r === SIN) ? autoriza : "");
+    aviso("ok", r === SIN ? "Ingreso autorizado" : "Extras registrados", r === SIN ? nombres : porRef[r].n,
+          `${quienes(k)} extra${k > 1 ? "s" : ""}` + (autoriza && (e2.autoriza || r === SIN) ? ` · autorizó ${autoriza}` : ""));
+  };
+}
+$("sin-pase").addEventListener("click", () => abrirExtras(SIN));
 
 // ---------- pantalla
 function pintar() {
-  const { ing, pase } = estado();
-  const personasIn = lista.reduce((s, p) => s + (ing[p.r] ? p.p : 0), 0);
-  $("n-in").textContent = personasIn; $("t-personas").textContent = ZD.personas;
+  const st = estado(), { ing, pase, ex } = st;
+  const libres = CAP - st.dentro;
+  $("n-dentro").textContent = st.dentro; $("t-cap").textContent = CAP;
+  $("c-dentro").classList.toggle("lleno", libres <= 0);
+  $("n-in").textContent = st.invitadosDentro; $("t-personas").textContent = ZD.personas;
   $("s-pases").textContent = `${Object.keys(ing).length} de ${lista.length} pases`;
-  $("n-pase").textContent = Object.keys(pase).length; $("t-pases").textContent = lista.length;
-  $("barra").style.transform = `scaleX(${personasIn / ZD.personas})`;
+  $("n-ex").textContent = st.extras; $("t-cupo").textContent = CUPO;
+  $("barra").style.transform = `scaleX(${Math.min(1, st.invitadosDentro / CAP)})`;
+  const bx = $("barra-ex"); bx.style.transform = `scaleX(${Math.min(1, st.extras / CAP)})`; bx.style.left = Math.min(100, st.invitadosDentro / CAP * 100) + "%";
+  const L = $("libres");
+  L.className = "libres" + (libres <= 0 ? " lleno" : libres <= 10 ? " alerta" : "");
+  L.innerHTML = libres <= 0 ? "<b>Capacidad completa</b> · no ingresan más personas" : `Quedan <b>${libres}</b> lugares en mesa · cupo de extras: <b>${Math.max(0, CUPO - st.extras)}</b>`;
   $("red").classList.toggle("mal", !enLinea);
   $("red-txt").textContent = enLinea
     ? (pendientes.length ? `En línea · enviando ${pendientes.length}` : "En línea · actualizado " + hora(ultimaSync))
@@ -238,9 +366,22 @@ function pintar() {
     if (g && p.g !== g) return false;
     if (filtro === "in" && !ing[p.r]) return false;
     if (filtro === "faltan" && ing[p.r]) return false;
-    return !q || sinTilde([p.n, ...(p.a || []), p.c, p.d].join(" ")).includes(q);
+    if (filtro === "ex" && !ex[p.r]) return false;
+    const exNombres = (ex[p.r] || []).map((e) => e.nombres || "").join(" ");
+    return !q || sinTilde([p.n, ...(p.a || []), p.c, p.d, exNombres].join(" ")).includes(q);
   });
   const items = []; let grupoAnt = null;
+  const sinPase = ex[SIN] || [];
+  if (sinPase.length && !g && (filtro === "todos" || filtro === "ex" || filtro === "in")) {
+    const t = document.createElement("li"); t.className = "grupo-tit"; t.textContent = "Ingresos sin pase (autorizados)"; items.push(t);
+    for (const e of sinPase) {
+      if (q && !sinTilde(e.nombres).includes(q)) continue;
+      const li = document.createElement("li"); li.innerHTML = `<div class="fila"><div><div class="nom"></div><div class="car"></div></div><span class="chip in"></span></div>`;
+      li.querySelector(".nom").textContent = e.nombres || "Sin nombre"; if (e.k > 1) li.querySelector(".nom").insertAdjacentHTML("beforeend", `<small>× ${e.k}</small>`);
+      li.querySelector(".car").textContent = "Autorizó: " + (e.autoriza || "—"); li.querySelector(".chip").textContent = "Ingresó " + hora(e.h);
+      items.push(li);
+    }
+  }
   for (const p of filas) {
     if (p.g !== grupoAnt) { grupoAnt = p.g; const t = document.createElement("li"); t.className = "grupo-tit"; t.textContent = p.g; items.push(t); }
     const li = document.createElement("li");
@@ -250,28 +391,43 @@ function pintar() {
     if (p.p > 1) { const s = document.createElement("small"); s.textContent = "× " + p.p; nom.append(s); }
     const car = document.createElement("div"); car.className = "car";
     car.textContent = [p.c, p.d, p.a && p.a.length ? "Con: " + p.a.join(", ") : ""].filter(Boolean).join(" · ");
+    const nex = st.extrasDe(p.r);
+    if (nex) {
+      const s = document.createElement("span"); s.className = "ex";
+      const nombres = ex[p.r].map((e) => e.nombres).filter(Boolean).join(", ");
+      s.textContent = `${car.textContent ? " · " : ""}+${nex} extra${nex > 1 ? "s" : ""}${nombres ? ": " + nombres : ""}`; car.append(s);
+    }
     txt.append(nom, car);
     const chip = document.createElement("span");
     if (ing[p.r]) { chip.className = "chip in"; chip.textContent = "Ingresó " + hora(ing[p.r].h); }
     else if (pase[p.r]) { chip.className = "chip pase"; chip.textContent = "Con pase"; }
     else { chip.className = "chip no"; chip.textContent = "Sin abrir"; }
     fila.append(txt, chip); li.append(fila);
-    if (abierto === p.r && !ing[p.r]) {
+    if (abierto === p.r) {
       const acc = document.createElement("div"); acc.className = "acciones";
-      const b = document.createElement("button"); b.type = "button"; b.className = "sec"; b.textContent = `Marcar ingreso manual (${quienes(p)})`;
-      let conf = 0;
-      b.onclick = (ev) => {
-        ev.stopPropagation();
-        if (Date.now() - conf > 4000) { conf = Date.now(); b.textContent = "Tocar otra vez para confirmar"; return; }
-        abierto = null; registrar(p.r, "Manual");
-        aviso("ok", "Ingreso manual", p.n, p.c || p.g, p);
-      };
-      acc.append(b); li.append(acc);
+      if (!ing[p.r]) {
+        const b = document.createElement("button"); b.type = "button"; b.className = "sec"; b.textContent = `Marcar ingreso manual (${quienes(p.p)})`;
+        let conf = 0;
+        b.onclick = (ev) => {
+          ev.stopPropagation();
+          if (Date.now() - conf > 4000) { conf = Date.now(); b.textContent = "Tocar otra vez para confirmar"; return; }
+          if (CAP - estado().dentro < p.p) { aviso("error", "Capacidad completa", p.n, "No quedan lugares en mesa"); return; }
+          abierto = null; registrar(p.r, "Manual");
+          aviso("ok", "Ingreso manual", p.n, p.c || p.g, p);
+        };
+        acc.append(b);
+      } else {
+        const b = document.createElement("button"); b.type = "button"; b.className = "sec"; b.textContent = "Agregar extras a este pase";
+        b.onclick = (ev) => { ev.stopPropagation(); abierto = null; abrirExtras(p.r); pintar(); };
+        acc.append(b);
+      }
+      li.append(acc);
     }
     fila.onclick = () => { abierto = abierto === p.r ? null : p.r; pintar(); };
     items.push(li);
   }
   $("lista").replaceChildren(...items);
+  if (formExtra) { const f = document.activeElement; if (!f || !f.closest || !f.closest("#extras")) pintarExtras(); }
 }
 
 function aviso(tipo, est, quien, detalle, p) {
@@ -291,12 +447,21 @@ async function validar(texto) {
   ultimo = codigo; ultimoT = ahora; ocupado = true;
   try {
     const f = await fichaPorCodigo(codigo);
-    if (!f) { aviso("error", "Código no válido", "No pertenece a la lista", codigo); return; }
-    const { ing } = estado();
-    if (ing[f.r]) aviso("repetido", "Ya ingresó", f.n, "Registrado a las " + hora(ing[f.r].h));
+    if (!f) { formExtra = null; pintarExtras(); aviso("error", "Código no válido", "No pertenece a la lista", codigo); return; }
+    const st = estado();
+    if (st.ing[f.r]) aviso("repetido", "Ya ingresó", f.n, "Registrado a las " + hora(st.ing[f.r].h));
+    else if (CAP - st.dentro < f.p) aviso("error", "Capacidad completa", f.n, `Quedan ${Math.max(0, CAP - st.dentro)} lugares en mesa`);
     else { await registrar(f.r, "QR"); aviso("ok", "Válido · Adelante", f.n, [f.c, f.g].filter(Boolean).join(" · "), f); }
+    // si ya está adentro, ofrece registrar a quienes llegaron de más con ese pase
+    if (estado().ing[f.r]) abrirExtrasSugerido(f.r);
   } catch { aviso("error", "Código no válido", "No pertenece a la lista", codigo); }
   finally { ocupado = false; }
+}
+function abrirExtrasSugerido(r) {   // botón discreto bajo el resultado
+  const caja = $("extras"); formExtra = null;
+  caja.classList.remove("oculto");
+  caja.innerHTML = `<div class="tit">¿VIENEN MÁS PERSONAS DE LAS DEL PASE?</div><div class="reg">Regístrelas como extras: hasta ${MAXEX} por pase sin autorización.</div><button type="button" class="sec" id="ex-abrir" style="margin-top:10px">Registrar extras</button>`;
+  $("ex-abrir").onclick = () => abrirExtras(r);
 }
 
 // ---------- cámara
@@ -344,23 +509,33 @@ document.querySelectorAll(".filtros button").forEach((b) => b.addEventListener("
   filtro = b.dataset.f; document.querySelectorAll(".filtros button").forEach((x) => x.classList.toggle("si", x === b)); pintar();
 }));
 
-// ---------- Excel con el estado de todos los pases
+// ---------- Excel con el estado de todos los pases y los extras
 $("excel").addEventListener("click", async () => {
   await sincronizar();
-  const { ing, pase } = estado();
+  const st = estado(), { ing, pase, ex } = st;
   const filas = lista.map((p) => ({
     "No.": p.no, "Anfitrión / grupo": p.g, "Nombre": p.n, "Cargo": p.c, "Nota": p.d,
-    "Acompañantes": (p.a || []).join(", "), "Personas": p.p,
+    "Acompañantes": (p.a || []).join(", "), "Personas del pase": p.p,
     "Pase abierto": pase[p.r] ? "Sí" : "No",
     "Hora de ingreso": ing[p.r] ? hora(ing[p.r].h) : "",
     "Registro": ing[p.r] ? ing[p.r].m : "",
+    "Extras": st.extrasDe(p.r) || "",
+    "Nombres de extras": (ex[p.r] || []).map((e) => e.nombres).filter(Boolean).join(", "),
+    "Autorizó extras": [...new Set((ex[p.r] || []).map((e) => e.autoriza).filter(Boolean))].join(", "),
     "Estado": ing[p.r] ? "Ingresó" : "Pendiente",
   }));
   const hoja = XLSX.utils.json_to_sheet(filas);
-  hoja["!cols"] = [5, 30, 32, 34, 30, 30, 9, 12, 15, 10, 11].map((w) => ({ wch: w }));
-  const per = lista.reduce((s, p) => s + (ing[p.r] ? p.p : 0), 0);
-  XLSX.utils.sheet_add_aoa(hoja, [[], ["", `Ingresaron ${per} de ${ZD.personas} personas (${Object.keys(ing).length} de ${lista.length} pases) · corte ${hora(Date.now())}`]], { origin: -1 });
-  const libro = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(libro, hoja, "Control Zorzal Dorado");
+  hoja["!cols"] = [5, 30, 32, 34, 26, 30, 9, 11, 14, 10, 8, 30, 22, 11].map((w) => ({ wch: w }));
+  XLSX.utils.sheet_add_aoa(hoja, [[], ["", `En mesa: ${st.dentro} de ${CAP} lugares · invitados ${st.invitadosDentro} de ${ZD.personas} (${Object.keys(ing).length} de ${lista.length} pases) · extras ${st.extras} de ${CUPO} · corte ${hora(Date.now())}`]], { origin: -1 });
+  const filasEx = [];
+  for (const [r, evs] of Object.entries(ex)) for (const e of evs)
+    filasEx.push({ "Hora": hora(e.h), "Pase": r === SIN ? "Sin pase" : porRef[r].n, "Anfitrión / grupo": r === SIN ? "" : porRef[r].g,
+                   "Cantidad": e.k, "Nombres": e.nombres || "", "Autorizó": e.autoriza || "", "Tipo": r === SIN ? "Sin pase autorizado" : (e.autoriza ? "Con autorización" : "Dentro de la regla") });
+  filasEx.sort((a, b) => a.Hora.localeCompare(b.Hora));
+  const hojaEx = XLSX.utils.json_to_sheet(filasEx.length ? filasEx : [{ "Hora": "", "Pase": "Sin extras registrados" }]);
+  hojaEx["!cols"] = [10, 32, 30, 9, 40, 24, 20].map((w) => ({ wch: w }));
+  const libro = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(libro, hoja, "Control Zorzal Dorado"); XLSX.utils.book_append_sheet(libro, hojaEx, "Extras");
   XLSX.writeFile(libro, `Control Zorzal Dorado ${new Date().toTimeString().slice(0, 5).replace(":", "h")}.xlsx`);
 });
 
@@ -372,6 +547,7 @@ $("excel").addEventListener("click", async () => {
   try {
     const bytes = deB64url(k);
     lista = await abrir(bytes, ZD.lista);
+    claveCtl = bytes;
     firma = await crypto.subtle.importKey("raw", bytes, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   } catch { $("sin-clave").classList.remove("oculto"); return; }
   for (const p of lista) porRef[p.r] = p;
